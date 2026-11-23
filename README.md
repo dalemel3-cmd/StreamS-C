@@ -25,5 +25,3 @@ npm run dev   # http://localhost:3000/clock
 
 ## Deploy
 Vercel (Hobby): project imported from this repo with **Root Directory** `web`. Pushes to `main` deploy automatically.
-
-`web/wrangler.jsonc` + `open-next.config.ts` are an unused Cloudflare Workers fallback (`npm run preview` / `npm run deploy` from `web/`). Vercel ignores them.
