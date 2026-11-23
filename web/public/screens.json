@@ -1,0 +1,6 @@
+{
+  "version": 1,
+  "screens": [
+    { "name": "clock", "path": "/clock", "refreshSec": 600 }
+  ]
+}

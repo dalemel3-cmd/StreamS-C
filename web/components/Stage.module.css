@@ -1,0 +1,18 @@
+.viewport {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+}
+
+.stage {
+  flex: none;
+  width: 1920px;
+  height: 1080px;
+  /* 5% safe area for TV overscan */
+  padding: 54px 96px;
+  position: relative;
+  transform-origin: center center;
+}
