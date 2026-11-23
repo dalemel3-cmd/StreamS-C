@@ -7,10 +7,12 @@
 }
 
 .date {
+  font-family: var(--display);
   font-size: 64px;
-  font-weight: 400;
-  color: var(--muted);
-  letter-spacing: 0.01em;
+  font-weight: 600;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
 .time {
@@ -24,14 +26,16 @@
 }
 
 .hm {
-  font-size: 380px;
-  font-weight: 300;
-  letter-spacing: -0.03em;
+  font-family: var(--display);
+  font-size: 400px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
 }
 
 .ampm {
-  font-size: 80px;
-  font-weight: 400;
+  font-family: var(--display);
+  font-size: 88px;
+  font-weight: 600;
   color: var(--accent);
 }
 
@@ -39,11 +43,14 @@
   display: flex;
   align-items: center;
   gap: 48px;
+  padding-top: 40px;
+  border-top: 4px solid var(--accent);
 }
 
 .temp {
+  font-family: var(--display);
   font-size: 160px;
-  font-weight: 300;
+  font-weight: 600;
   line-height: 1;
 }
 
@@ -54,8 +61,11 @@
 }
 
 .label {
+  font-family: var(--display);
   font-size: 64px;
   font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .sub {
