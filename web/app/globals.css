@@ -1,9 +1,12 @@
 :root {
-  --bg: #07090c;
-  --fg: #f4f6f8;
-  --muted: #8a94a3;
-  --accent: #6cb6ff;
-  --font: "Roboto", "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  /* Shiloh Christian: navy + gold (from the Lift Leaderboard design) */
+  --bg: #030a14;
+  --panel: #0a1120;
+  --fg: #ffffff;
+  --muted: #bcc1ca;
+  --accent: #b89c5b;
+  --font: "Manrope", "Roboto", system-ui, sans-serif;
+  --display: "Oswald", "Roboto Condensed", "Roboto", sans-serif;
 }
 
 /* Protocol Zero: dark tactical, orange accent. */
@@ -13,6 +16,7 @@
   --muted: #6f6a62;
   --accent: #ff6b1a;
   --font: "Roboto Condensed", "Roboto", system-ui, sans-serif;
+  --display: "Oswald", "Roboto Condensed", sans-serif;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
