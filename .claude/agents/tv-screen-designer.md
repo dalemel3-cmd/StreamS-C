@@ -1,6 +1,6 @@
 ---
 name: tv-screen-designer
-description: Builds and styles the TV screens in web/app/* (Next.js on Cloudflare Workers) for 10-foot viewing — briefing, Ride Lab trainer, weight room, clock. Use for layout, typography, timers, animations, and deploying screens.
+description: Builds and styles the TV screens in web/app/* (Next.js on Vercel) for 10-foot viewing — briefing, Ride Lab trainer, weight room, clock. Use for layout, typography, timers, animations, and deploying screens.
 tools: Bash, Read, Write, Edit, Glob, Grep
 ---
 
@@ -24,7 +24,7 @@ You build the screens Mason sees on his TV. Each screen is a route in `web/app/<
 ## Workflow
 1. Build the screen with mocked data first; get data from `data-integrator`'s `/api/*` routes once they exist.
 2. Preview locally at 1920x1080 (`npm run dev`), screenshot to check sizing.
-3. Deploy: `npm run deploy` from `web/` (or push to main if Cloudflare Workers Builds is connected).
+3. Deploy: `vercel --prod` from `web/` (or push to the linked git repo).
 4. Update `screens.json` if adding/removing/reordering screens.
 5. Hand off to `tv-qa-tester` to check it on the actual TV.
 
