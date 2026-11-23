@@ -7,7 +7,7 @@ import styles from "./Stage.module.css";
  * Fixed 1920x1080 canvas scaled to fit the screen, so every screen is designed
  * in TV pixels regardless of the WebView's real resolution or density.
  */
-export default function Stage({ children, theme }: { children: React.ReactNode; theme?: string }) {
+export default function Stage({ children }: { children: React.ReactNode }) {
   const [scale, setScale] = useState(1);
 
   useEffect(() => {
@@ -16,11 +16,6 @@ export default function Stage({ children, theme }: { children: React.ReactNode; 
     window.addEventListener("resize", fit);
     return () => window.removeEventListener("resize", fit);
   }, []);
-
-  useEffect(() => {
-    if (theme) document.documentElement.dataset.theme = theme;
-    else delete document.documentElement.dataset.theme;
-  }, [theme]);
 
   return (
     <div className={styles.viewport}>

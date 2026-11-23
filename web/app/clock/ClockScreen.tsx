@@ -2,14 +2,13 @@
 
 import { useEffect, useState } from "react";
 import Stage from "@/components/Stage";
-import { onOk, store } from "@/lib/tv";
+import { store } from "@/lib/tv";
 import type { Weather } from "@/lib/weather";
 import styles from "./clock.module.css";
 
 const TZ = "America/Chicago";
 const REFRESH_MS = 10 * 60 * 1000; // matches screens.json refreshSec
 const WEATHER_KEY = "clock.weather";
-const THEME_KEY = "clock.theme";
 
 const timeFmt = new Intl.DateTimeFormat("en-US", { timeZone: TZ, hour: "numeric", minute: "2-digit" });
 const dateFmt = new Intl.DateTimeFormat("en-US", { timeZone: TZ, weekday: "long", month: "long", day: "numeric" });
@@ -27,7 +26,6 @@ export default function ClockScreen() {
   const [now, setNow] = useState<ReturnType<typeof readNow> | null>(null);
   const [weather, setWeather] = useState<Weather | null>(null);
   const [offline, setOffline] = useState(false);
-  const [theme, setTheme] = useState<"default" | "pz">("default");
 
   // Clock: tick every second, but React only re-renders when the strings change.
   useEffect(() => {
@@ -41,18 +39,11 @@ export default function ClockScreen() {
     return () => clearInterval(id);
   }, []);
 
-  // Theme: ?theme=pz wins, else last choice. OK on the remote toggles it.
+  // Protocol Zero theme was removed; clear any saved choice so the stick never sticks on it.
   useEffect(() => {
-    const q = new URLSearchParams(location.search).get("theme");
-    const initial = q === "pz" || q === "default" ? q : store.get<"default" | "pz">(THEME_KEY) ?? "default";
-    setTheme(initial);
-    return onOk(() =>
-      setTheme((t) => {
-        const next = t === "pz" ? "default" : "pz";
-        store.set(THEME_KEY, next);
-        return next;
-      }),
-    );
+    try {
+      localStorage.removeItem("clock.theme");
+    } catch {}
   }, []);
 
   // Weather: show cache immediately, then refresh on an interval. Never blank on failure.
@@ -77,11 +68,9 @@ export default function ClockScreen() {
     return () => clearInterval(id);
   }, []);
 
-  const pz = theme === "pz";
-
   return (
-    <Stage theme={pz ? "pz" : undefined}>
-      <div className={`${styles.screen} ${pz ? styles.pz : ""}`}>
+    <Stage>
+      <div className={styles.screen}>
         <header className={styles.date}>{now?.date ?? " "}</header>
 
         <main className={styles.time}>
@@ -106,7 +95,6 @@ export default function ClockScreen() {
         </section>
 
         <footer className={styles.updated}>
-          {pz && <span className={styles.badge}>PROTOCOL ZERO</span>}
           {offline && <span className={styles.offline}>Offline</span>}
           {weather && <span>Updated {shortTime.format(new Date(weather.updated))}</span>}
         </footer>

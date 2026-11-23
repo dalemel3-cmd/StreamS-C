@@ -92,31 +92,3 @@
 .offline {
   color: #ffb020;
 }
-
-.badge {
-  color: var(--accent);
-  letter-spacing: 0.2em;
-  font-weight: 700;
-}
-
-/* Protocol Zero styling */
-.pz .date,
-.pz .label {
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-
-.pz .hm {
-  font-weight: 700;
-  letter-spacing: -0.02em;
-}
-
-.pz .temp {
-  color: var(--accent);
-  font-weight: 700;
-}
-
-.pz .time {
-  border-left: 12px solid var(--accent);
-  padding-left: 48px;
-}
