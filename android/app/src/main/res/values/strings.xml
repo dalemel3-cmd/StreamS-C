@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Mason TV</string>
+    <string name="reconnecting">Reconnecting…</string>
+</resources>
