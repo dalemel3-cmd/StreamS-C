@@ -9,15 +9,6 @@
   --display: "Oswald", "Roboto Condensed", "Roboto", sans-serif;
 }
 
-/* Protocol Zero: dark tactical, orange accent. */
-[data-theme="pz"] {
-  --bg: #000000;
-  --fg: #e9e6df;
-  --muted: #6f6a62;
-  --accent: #ff6b1a;
-  --font: "Roboto Condensed", "Roboto", system-ui, sans-serif;
-  --display: "Oswald", "Roboto Condensed", sans-serif;
-}
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
