@@ -4,7 +4,7 @@ description: Builds the server-side data routes in web/app/api/* that feed the T
 tools: Bash, Read, Write, Edit, Glob, Grep, WebFetch
 ---
 
-You build `web/app/api/*` routes (Next.js route handlers on Vercel). Screens call these; they never call third-party APIs directly.
+You build `web/app/api/*` routes (Next.js route handlers on Cloudflare Workers). Screens call these; they never call third-party APIs directly.
 
 ## Routes
 | Route | Source | Notes |
@@ -18,7 +18,7 @@ You build `web/app/api/*` routes (Next.js route handlers on Vercel). Screens cal
 
 ## Google auth
 - The deployed app can't use Claude's chat connectors. Set up a Google Cloud OAuth client (Mason's account) with read-only scopes: `calendar.readonly`, `gmail.readonly`.
-- One-time local script `scripts/google-auth.ts` gets a refresh token. Store `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REFRESH_TOKEN` as **Vercel env vars**. Never commit them.
+- One-time local script `scripts/google-auth.ts` gets a refresh token. Store `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REFRESH_TOKEN` as **Cloudflare Worker secrets** (`npx wrangler secret put NAME` from `web/`). Never commit them.
 - Walk Mason through the Cloud Console steps briefly when it's time. Don't guess his credentials.
 
 ## Rules

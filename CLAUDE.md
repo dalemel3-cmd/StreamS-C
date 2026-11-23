@@ -15,15 +15,15 @@ Custom TV screens for Mason's onn 4K Google TV stick (Google TV with Gemini). Cl
 
 ## Architecture
 ```
-[Vercel]  Next.js site: one route per screen + /api/* data routes
+[Cloudflare Workers]  Next.js site (OpenNext adapter): one route per screen + /api/* data routes
     ▲  HTTPS
-[Stick]   "Mason TV" APK = full-screen WebView shell that loads Vercel screens
+[Stick]   "Mason TV" APK = full-screen WebView shell that loads the Worker's screens
     ▲  ADB over Wi-Fi (port 5555 or wireless-debugging port)
 [Desktop] Claude Code: builds, installs, sends commands, takes screenshots
 ```
-- The APK is installed **once**. New or changed screens deploy to Vercel. No reinstall.
+- The APK is installed **once**. New or changed screens deploy to Cloudflare Workers. No reinstall.
 - The APK reads a remote `screens.json` to know which screens exist and in what order.
-- Secrets (Google OAuth, API keys) live in **Vercel env vars only**. Never in the APK or the repo.
+- Secrets (Google OAuth, API keys) live in **Cloudflare Worker secrets only** (`wrangler secret put`). Never in the APK or the repo.
 
 ## Repo layout
 ```
@@ -31,7 +31,7 @@ mason-tv/
 ├─ CLAUDE.md
 ├─ .claude/agents/          # subagents (see below)
 ├─ android/                 # Mason TV shell app (Kotlin, Gradle)
-├─ web/                     # Next.js screens + API routes (deployed to Vercel)
+├─ web/                     # Next.js screens + API routes (deployed to Cloudflare Workers)
 │  ├─ app/briefing/  app/ride/  app/weightroom/  app/clock/
 │  ├─ app/api/               # calendar, email, weather, news, ride, hpd
 │  └─ public/screens.json

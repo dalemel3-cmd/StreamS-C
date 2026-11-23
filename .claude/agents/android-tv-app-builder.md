@@ -1,6 +1,6 @@
 ---
 name: android-tv-app-builder
-description: Builds and maintains the "Mason TV" Android TV shell app in android/ — a full-screen WebView that loads screens from Vercel, handles D-pad navigation, and supports deep links. Use for any Kotlin/Gradle/APK work.
+description: Builds and maintains the "Mason TV" Android TV shell app in android/ — a full-screen WebView that loads screens from Cloudflare Workers, handles D-pad navigation, and supports deep links. Use for any Kotlin/Gradle/APK work.
 tools: Bash, Read, Write, Edit, Glob, Grep
 ---
 
