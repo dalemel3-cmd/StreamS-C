@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { isLocked } from "@/lib/rotateLock";
+import { LOCK_EVENT, isLocked } from "@/lib/rotateLock";
 
 const PAUSE_AFTER_KEY_MS = 2 * 60 * 1000;
 const LAST_KEY = "rotate.last";
@@ -41,43 +41,70 @@ export function useRotate(seconds: number, skip = false) {
       }
     };
 
-    const next = async () => {
+    const next = async (retry = false): Promise<void> => {
       if (done) return;
       if (isLocked()) return arm(periodMs);
       const since = Date.now() - lastAdvance();
-      if (since < periodMs * 0.9) return arm(periodMs - since);
+      if (!retry && since >= 0 && since < periodMs * 0.9)
+        return arm(periodMs - since);
       done = true;
       try {
         sessionStorage.setItem(LAST_KEY, String(Date.now()));
       } catch {}
       try {
         await goNext();
+        // Still here 15 s after navigating (slow or failed load): try again.
+        setTimeout(() => {
+          done = false;
+          void next(true);
+        }, 15000);
       } catch {
-        // screens.json didn't load (network blip): try again shortly instead of stalling on this screen.
+        // screens.json didn't load or hung: try again shortly instead of stalling on this screen.
         done = false;
-        arm(5000);
+        clearTimeout(timer);
+        timer = setTimeout(() => void next(true), 5000);
       }
     };
     const arm = (ms: number) => {
       clearTimeout(timer);
       timer = setTimeout(next, ms);
     };
-    const onKey = () => arm(PAUSE_AFTER_KEY_MS);
+    // Up only toggles the lock; other keys (manual browsing) pause rotation for a while.
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "ArrowUp") arm(PAUSE_AFTER_KEY_MS);
+    };
+    // Unlocking resumes the normal cycle from now.
+    const onLock = (e: Event) => {
+      if (!(e as CustomEvent<boolean>).detail) {
+        done = false;
+        arm(periodMs);
+      }
+    };
     arm(periodMs);
     window.addEventListener("keydown", onKey);
+    window.addEventListener(LOCK_EVENT, onLock);
     return () => {
       clearTimeout(timer);
       window.removeEventListener("keydown", onKey);
+      window.removeEventListener(LOCK_EVENT, onLock);
     };
   }, [seconds]);
 }
 
 async function goNext() {
-  const { screens } = (await (
-    await fetch("/screens.json", { cache: "no-store" })
-  ).json()) as {
-    screens: { path: string }[];
-  };
+  // Give up after 8 s so a hung request can't freeze rotation.
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), 8000);
+  let screens: { path: string }[];
+  try {
+    ({ screens } = (await (
+      await fetch("/screens.json", { cache: "no-store", signal: ctrl.signal })
+    ).json()) as {
+      screens: { path: string }[];
+    });
+  } finally {
+    clearTimeout(t);
+  }
   const i = screens.findIndex((s) => s.path === location.pathname);
   const next = i >= 0 ? screens[(i + 1) % screens.length] : screens[0];
   location.href = next.path;
