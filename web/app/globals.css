@@ -23,3 +23,11 @@ html, body {
   cursor: none;
   user-select: none;
 }
+
+/* Screen-to-screen crossfade (lib/transition.ts). */
+body {
+  transition: opacity 400ms ease;
+}
+html.leaving body {
+  opacity: 0;
+}

@@ -1,7 +1,11 @@
 "use client";
 
 import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { LOCK_EVENT, isLocked } from "@/lib/rotateLock";
+import { fadeIn, fadeOut } from "@/lib/transition";
+
+type Router = ReturnType<typeof useRouter>;
 
 const PAUSE_AFTER_KEY_MS = 2 * 60 * 1000;
 const LAST_KEY = "rotate.last";
@@ -17,20 +21,34 @@ const LAST_KEY = "rotate.last";
  *
  * `skip` (e.g. the chosen sport has no marks here) moves on right away.
  * While locked (Up on the remote), neither happens.
+ *
+ * Screens switch in-app with a short fade (no full page reload), and the next screen
+ * is prefetched while this one is showing.
  */
 export function useRotate(seconds: number, skip = false) {
+  const router = useRouter();
+
+  // This screen just mounted: fade it in and warm up the next one.
+  useEffect(() => {
+    fadeIn();
+    nextPath()
+      .then((p) => router.prefetch(p))
+      .catch(() => {});
+  }, [router]);
+
   useEffect(() => {
     if (!skip || isLocked()) return;
     try {
       sessionStorage.setItem(LAST_KEY, String(Date.now()));
     } catch {}
-    goNext().catch(() => {});
-  }, [skip]);
+    goNext(router).catch(() => {});
+  }, [skip, router]);
 
   useEffect(() => {
     if (new URLSearchParams(location.search).get("rotate") === "0") return;
     const periodMs = seconds * 1000;
     let timer: ReturnType<typeof setTimeout>;
+    let retryTimer: ReturnType<typeof setTimeout> | undefined;
     let done = false;
 
     const lastAdvance = () => {
@@ -52,9 +70,9 @@ export function useRotate(seconds: number, skip = false) {
         sessionStorage.setItem(LAST_KEY, String(Date.now()));
       } catch {}
       try {
-        await goNext();
+        await goNext(router);
         // Still here 15 s after navigating (slow or failed load): try again.
-        setTimeout(() => {
+        retryTimer = setTimeout(() => {
           done = false;
           void next(true);
         }, 15000);
@@ -85,13 +103,15 @@ export function useRotate(seconds: number, skip = false) {
     window.addEventListener(LOCK_EVENT, onLock);
     return () => {
       clearTimeout(timer);
+      clearTimeout(retryTimer);
       window.removeEventListener("keydown", onKey);
       window.removeEventListener(LOCK_EVENT, onLock);
     };
-  }, [seconds]);
+  }, [seconds, router]);
 }
 
-async function goNext() {
+/** Path of the screen after this one in screens.json (the first screen if this one isn't listed). */
+async function nextPath(): Promise<string> {
   // Give up after 8 s so a hung request can't freeze rotation.
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), 8000);
@@ -106,6 +126,13 @@ async function goNext() {
     clearTimeout(t);
   }
   const i = screens.findIndex((s) => s.path === location.pathname);
-  const next = i >= 0 ? screens[(i + 1) % screens.length] : screens[0];
-  location.href = next.path;
+  return (i >= 0 ? screens[(i + 1) % screens.length] : screens[0]).path;
+}
+
+async function goNext(router: Router) {
+  const path = await nextPath();
+  await fadeOut();
+  router.push(path);
+  // If the switch stalls, don't leave the screen dark.
+  setTimeout(fadeIn, 4000);
 }
