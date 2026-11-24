@@ -48,18 +48,18 @@ html.leaving body {
 }
 .menu {
   width: 86vw;
-  padding: 2.2vw 2.8vw;
+  padding: 1.5vw 2.8vw;
   background: #0b1524;
   border: 0.16vw solid var(--accent);
   border-radius: 1vw;
 }
 .menuTitle {
-  font: 700 3.4vw/1 var(--display);
+  font: 700 3vw/1 var(--display);
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 .menuHint {
-  margin: 0.6vw 0 1.4vw;
+  margin: 0.4vw 0 0.9vw;
   font-size: 1.7vw;
   color: var(--muted);
 }
@@ -67,16 +67,16 @@ html.leaving body {
   list-style: none;
   display: grid;
   grid-auto-flow: column;
-  grid-template-rows: repeat(11, auto);
+  grid-template-rows: repeat(12, auto);
   column-gap: 2.4vw;
-  row-gap: 0.4vw;
+  row-gap: 0.15vw;
 }
 .menu li {
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 1vw;
-  padding: 0.45vw 1vw;
+  padding: 0.3vw 1vw;
   border-radius: 0.5vw;
   font-size: 1.75vw;
   font-weight: 600;
