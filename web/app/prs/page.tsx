@@ -5,7 +5,13 @@ import styles from "@/components/board/board.module.css";
 import { useBoard } from "@/components/board/useBoard";
 import { useRotate } from "@/components/board/useRotate";
 import { useSportFilter } from "@/components/board/useSportFilter";
-import { METRICS, UNIT_LABEL, formatValue, sportsIn } from "@/lib/board";
+import {
+  METRICS,
+  UNIT_LABEL,
+  formatValue,
+  inSport,
+  sportsIn,
+} from "@/lib/board";
 
 const TITLE: Record<string, string> = Object.fromEntries(
   Object.values(METRICS).map((m) => [
@@ -22,7 +28,7 @@ export default function PRs() {
   const prs = (board?.bests ?? [])
     .filter(
       (b) =>
-        (!sport || b.sport === sport) &&
+        inSport(b, sport) &&
         b.pr_this_week &&
         b.previous != null &&
         b.previous !== b.value,

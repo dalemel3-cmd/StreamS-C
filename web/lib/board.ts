@@ -2,7 +2,8 @@
 
 export type Best = {
   name: string; // first name + last initial only (minors, public office)
-  sport: string | null;
+  sport: string | null; // display label; "A · B" when one athlete has profiles in two sports
+  sports?: string[]; // every sport the athlete is on (filtering uses this)
   grade: string | null;
   position: string | null;
   metric: string;
@@ -43,7 +44,14 @@ export type Board = {
   semester?: string;
   semester_bests?: Pick<
     Best,
-    "name" | "sport" | "metric" | "unit" | "higher" | "value" | "date"
+    | "name"
+    | "sport"
+    | "sports"
+    | "metric"
+    | "unit"
+    | "higher"
+    | "value"
+    | "date"
   >[];
   stale?: boolean;
 };
@@ -53,8 +61,16 @@ export const METRICS: Record<
   string,
   { metric: string; title: string; note: string }
 > = {
-  bench: { metric: "Bench", title: "Bench Press", note: "Est. max · sets of 5 or fewer" },
-  squat: { metric: "Squat", title: "Back Squat", note: "Est. max · sets of 5 or fewer" },
+  bench: {
+    metric: "Bench",
+    title: "Bench Press",
+    note: "Est. max · sets of 5 or fewer",
+  },
+  squat: {
+    metric: "Squat",
+    title: "Back Squat",
+    note: "Est. max · sets of 5 or fewer",
+  },
   "front-squat": {
     metric: "Front Squat",
     title: "Front Squat",
@@ -70,7 +86,11 @@ export const METRICS: Record<
     title: "Power Clean",
     note: "Est. max · sets of 5 or fewer",
   },
-  deadlift: { metric: "Deadlift", title: "Deadlift", note: "Est. max · sets of 5 or fewer" },
+  deadlift: {
+    metric: "Deadlift",
+    title: "Deadlift",
+    note: "Est. max · sets of 5 or fewer",
+  },
   vertical: { metric: "Vertical", title: "Vertical Jump", note: "Arm swing" },
   "vertical-no-arms": {
     metric: "Vertical (no arms)",
@@ -92,6 +112,19 @@ export const UNIT_LABEL: Record<Best["unit"], string> = {
   s: "SEC",
 };
 
+/** Every sport an athlete's mark belongs to (falls back to `sport` for older feeds). */
+export function sportsOf(b: Pick<Best, "sport" | "sports">): string[] {
+  return b.sports ?? (b.sport ? [b.sport] : []);
+}
+
+/** True when no sport is picked or the athlete is on the picked sport. */
+export function inSport(
+  b: Pick<Best, "sport" | "sports">,
+  sport: string | null,
+): boolean {
+  return !sport || sportsOf(b).includes(sport);
+}
+
 /** Ranked bests for one metric, optionally filtered by sport. */
 export function ranked(
   board: Board | null,
@@ -100,15 +133,11 @@ export function ranked(
 ): Best[] {
   if (!board) return [];
   return board.bests
-    .filter((b) => b.metric === metric && (!sport || b.sport === sport))
+    .filter((b) => b.metric === metric && inSport(b, sport))
     .sort((a, b) => (a.higher ? b.value - a.value : a.value - b.value));
 }
 
 export function sportsIn(board: Board | null): string[] {
   if (!board) return [];
-  return [
-    ...new Set(
-      board.bests.map((b) => b.sport).filter((s): s is string => Boolean(s)),
-    ),
-  ].sort();
+  return [...new Set(board.bests.flatMap(sportsOf))].sort();
 }
