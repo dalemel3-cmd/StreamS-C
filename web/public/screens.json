@@ -6,6 +6,7 @@
     { "name": "front-squat", "path": "/leaders/front-squat", "refreshSec": 300 },
     { "name": "hang-clean", "path": "/leaders/hang-clean", "refreshSec": 300 },
     { "name": "vertical", "path": "/leaders/vertical", "refreshSec": 300 },
+    { "name": "vertical-no-arms", "path": "/leaders/vertical-no-arms", "refreshSec": 300 },
     { "name": "fly-10", "path": "/leaders/fly-10", "refreshSec": 300 },
     { "name": "prs", "path": "/prs", "refreshSec": 300 },
     { "name": "records", "path": "/records", "refreshSec": 300 },

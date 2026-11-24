@@ -1,17 +1,36 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { onOk, store } from "@/lib/tv";
+import { onOk } from "@/lib/tv";
 
 const KEY = "board.sport";
 
-/** OK on the remote cycles All -> each sport -> All. `?sport=Football` pins it. Shared across screens. */
+// Per app run only (sessionStorage), so every launch starts on All sports.
+const session = {
+  get(): string | null {
+    try {
+      return sessionStorage.getItem(KEY);
+    } catch {
+      return null;
+    }
+  },
+  set(v: string | null) {
+    try {
+      if (v) sessionStorage.setItem(KEY, v);
+      else sessionStorage.removeItem(KEY);
+    } catch {}
+  },
+};
+
+/** OK on the remote cycles All -> each sport -> All. `?sport=Football` pins it. Shared across screens until relaunch. */
 export function useSportFilter(sports: string[]) {
   const [sport, setSport] = useState<string | null>(null);
 
   useEffect(() => {
-    const q = new URLSearchParams(location.search).get("sport");
-    setSport(q ?? store.get<string>(KEY));
+    try {
+      localStorage.removeItem(KEY); // older builds saved it permanently
+    } catch {}
+    setSport(new URLSearchParams(location.search).get("sport") ?? session.get());
   }, []);
 
   useEffect(
@@ -20,7 +39,7 @@ export function useSportFilter(sports: string[]) {
         setSport((cur) => {
           const order = [null, ...sports];
           const next = order[(order.indexOf(cur) + 1) % order.length] ?? null;
-          store.set(KEY, next);
+          session.set(next);
           return next;
         }),
       ),

@@ -12,11 +12,15 @@ export default function Leaderboard({ slug }: { slug: string }) {
   const { board, offline } = useBoard();
   const sport = useSportFilter(sportsIn(board));
   useRotate(20);
-  const top = ranked(board, def.metric, sport).slice(0, 10);
+  // A sport with no marks for this test (e.g. Football has only no-arms verticals) shows All sports instead.
+  const forSport = ranked(board, def.metric, sport);
+  const fallback = Boolean(sport) && forSport.length === 0;
+  const top = (fallback ? ranked(board, def.metric, null) : forSport).slice(0, 10);
+  const scope = !sport ? "All sports" : fallback ? `All sports · no ${sport} marks` : sport;
 
   return (
     <Frame
-      eyebrow={`Shiloh HPD · ${sport ?? "All sports"}`}
+      eyebrow={`Shiloh HPD · ${scope}`}
       title={def.title}
       note={def.note}
       filter="OK: change sport"
