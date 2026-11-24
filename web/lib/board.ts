@@ -22,7 +22,7 @@ export type Trend = {
   avg: number;
 };
 
-/** Same athletes compared to themselves: best in their first 14 days of testing vs best in the last 30 days. */
+/** This semester, same athletes: avg max in their first 2 weeks (base) vs avg max over their last 30 days of logging (recent). */
 export type Gain = {
   metric: string;
   sport: string;
@@ -40,6 +40,7 @@ export type Board = {
   bests: Best[];
   trends: Trend[];
   gains?: Gain[];
+  semester?: string;
   stale?: boolean;
 };
 
