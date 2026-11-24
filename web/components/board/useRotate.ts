@@ -45,7 +45,9 @@ export function useRotate(seconds: number) {
         const next = i >= 0 ? screens[(i + 1) % screens.length] : screens[0];
         location.href = next.path;
       } catch {
+        // screens.json didn't load (network blip): try again shortly instead of stalling on this screen.
         done = false;
+        arm(5000);
       }
     };
     const arm = (ms: number) => {
