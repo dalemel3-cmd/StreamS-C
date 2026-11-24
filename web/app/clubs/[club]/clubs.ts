@@ -4,6 +4,9 @@ export type Club =
 
 export const CLUBS: Record<string, Club> = {
   "1000": { kind: "total", title: "1,000 lb club", target: 1000 },
+  "16mph": { kind: "speed", title: "16 mph club", mph: 16 },
+  "17mph": { kind: "speed", title: "17 mph club", mph: 17 },
+  "18mph": { kind: "speed", title: "18 mph club", mph: 18 },
   "19mph": { kind: "speed", title: "19 mph club", mph: 19 },
   "20mph": { kind: "speed", title: "20 mph club", mph: 20 },
   "21mph": { kind: "speed", title: "21 mph club", mph: 21 },
