@@ -22,6 +22,7 @@ const SHOW = [
   "vertical",
   "vertical-no-arms",
   "fly-10",
+  "top-speed",
 ];
 const dateFmt = new Intl.DateTimeFormat("en-US", {
   month: "short",

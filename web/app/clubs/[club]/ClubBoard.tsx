@@ -54,21 +54,42 @@ export const flyMph = (seconds: number) => 20.45 / seconds;
 type SpeedRow = {
   name: string;
   sport: string | null;
-  time: number;
-  mph: number;
+  sports?: string[];
+  fly: number | null; // Fly 10 mph
+  gps: number | null; // Titan GPS top speed, mph
+  mph: number; // the faster of the two
+  source: "GPS" | "Fly 10";
 };
 
-/** Each athlete's best (fastest) Fly 10, fastest first. */
+/** Each athlete's best speed: the faster of their GPS top speed and their Fly 10 converted to mph. */
 function speeds(bests: Best[], sport: string | null): SpeedRow[] {
-  return bests
-    .filter((b) => b.metric === "Fly 10" && b.value > 0 && inSport(b, sport))
-    .map((b) => ({
+  const rows = new Map<string, SpeedRow>();
+  for (const b of bests) {
+    if (b.value <= 0 || !inSport(b, sport)) continue;
+    const mph =
+      b.metric === "Fly 10"
+        ? flyMph(b.value)
+        : b.metric === "Top Speed"
+          ? b.value
+          : null;
+    if (mph == null) continue;
+    const key = `${b.name}|${b.sport}`;
+    const r = rows.get(key) ?? {
       name: b.name,
       sport: b.sport,
-      time: b.value,
-      mph: flyMph(b.value),
-    }))
-    .sort((a, b) => a.time - b.time);
+      sports: b.sports,
+      fly: null,
+      gps: null,
+      mph: 0,
+      source: "GPS" as const,
+    };
+    if (b.metric === "Fly 10") r.fly = Math.max(r.fly ?? 0, mph);
+    else r.gps = Math.max(r.gps ?? 0, mph);
+    r.mph = Math.max(r.fly ?? 0, r.gps ?? 0);
+    r.source = (r.gps ?? 0) >= (r.fly ?? 0) ? "GPS" : "Fly 10";
+    rows.set(key, r);
+  }
+  return [...rows.values()].sort((a, b) => b.mph - a.mph);
 }
 
 const Name = ({
@@ -144,23 +165,26 @@ export default function ClubBoard({ slug }: { slug: string }) {
               <th>
                 {members.length ? "Athlete" : `Closest to ${club.mph} mph`}
               </th>
+              <th>GPS</th>
               <th>Fly 10</th>
-              <th>MPH</th>
+              <th>Best</th>
             </tr>
           </thead>
           <tbody>
             {rows.map((r) => (
               <tr key={`${r.name}|${r.sport}`}>
                 <Name r={r} sport={sport} />
-                <td>{r.time.toFixed(2)} s</td>
+                <td>{r.gps == null ? "–" : r.gps.toFixed(1)}</td>
+                <td>{r.fly == null ? "–" : r.fly.toFixed(1)}</td>
                 <td>
                   <span className={styles.big}>{r.mph.toFixed(1)}</span>
-                  {!members.length && (
-                    <span className={styles.meta}>
-                      {" "}
-                      &nbsp;−{(club.mph - r.mph).toFixed(1)}
-                    </span>
-                  )}
+                  <span className={styles.meta}>
+                    {" "}
+                    &nbsp;
+                    {members.length
+                      ? r.source
+                      : `−${(club.mph - r.mph).toFixed(1)}`}
+                  </span>
                 </td>
               </tr>
             ))}
@@ -175,7 +199,7 @@ export default function ClubBoard({ slug }: { slug: string }) {
       eyebrow={`Shiloh HPD · ${sport ?? "All sports"} · ${
         club.kind === "total"
           ? "Bench + Squat + Clean"
-          : "From Fly 10 · 20.45 ÷ time"
+          : "Best of GPS or Fly 10 (20.45 ÷ time)"
       }`}
       title={club.title}
       note={count ? `${count} member${count === 1 ? "" : "s"}` : undefined}
@@ -189,7 +213,7 @@ export default function ClubBoard({ slug }: { slug: string }) {
             ? "Loading…"
             : club.kind === "total"
               ? "No athletes with all three lifts yet"
-              : "No Fly 10 times yet"}
+              : "No speeds yet"}
         </div>
       )}
     </Frame>

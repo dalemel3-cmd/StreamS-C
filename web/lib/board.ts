@@ -7,7 +7,7 @@ export type Best = {
   grade: string | null;
   position: string | null;
   metric: string;
-  unit: "lb" | "in" | "s";
+  unit: "lb" | "in" | "s" | "mph";
   higher: boolean; // true: bigger is better; false: lower is better (sprint times)
   value: number;
   date: string; // YYYY-MM-DD
@@ -27,7 +27,7 @@ export type Trend = {
 export type Gain = {
   metric: string;
   sport: string;
-  unit: "lb" | "in" | "s";
+  unit: "lb" | "in" | "s" | "mph";
   higher: boolean;
   athletes: number;
   base_avg: number;
@@ -109,6 +109,7 @@ export const METRICS: Record<
     note: "Hands on hips",
   },
   "fly-10": { metric: "Fly 10", title: "Fly 10", note: "Fastest time" },
+  "top-speed": { metric: "Top Speed", title: "Top Speed", note: "Titan GPS" },
 };
 
 /** The HPD app shows estimated maxes to the nearest 5 lb (v5.16.5); ranking stays on the exact value. */
@@ -116,7 +117,7 @@ export const round5 = (v: number) => Math.round(v / 5) * 5;
 
 export function formatValue(v: number, unit: Best["unit"]): string {
   if (unit === "s") return v.toFixed(2);
-  if (unit === "in") return v.toFixed(1);
+  if (unit === "in" || unit === "mph") return v.toFixed(1);
   return String(round5(v));
 }
 
@@ -124,6 +125,7 @@ export const UNIT_LABEL: Record<Best["unit"], string> = {
   lb: "LB",
   in: "IN",
   s: "SEC",
+  mph: "MPH",
 };
 
 /** Every sport an athlete's mark belongs to (falls back to `sport` for older feeds). */
