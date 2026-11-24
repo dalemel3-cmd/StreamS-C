@@ -15,6 +15,10 @@ type Router = ReturnType<typeof useRouter>;
 
 const PAUSE_AFTER_KEY_MS = 2 * 60 * 1000;
 const LAST_KEY = "rotate.last";
+// Screens switch in-app, so the page itself never reloads. After this long, the next
+// switch is a full page load instead, which picks up fresh code and settings.
+const FULL_LOAD_AFTER_MS = 3 * 60 * 60 * 1000;
+const loadedAt = Date.now();
 
 /**
  * Auto-rotate to the next screen in screens.json after `seconds`. The page navigates
@@ -134,6 +138,10 @@ export async function goNext(router: Router, path?: string | null) {
   const target = path ?? (await nextPath());
   if (!target || target === location.pathname) return;
   await fadeOut();
+  if (Date.now() - loadedAt > FULL_LOAD_AFTER_MS) {
+    location.assign(target);
+    return;
+  }
   router.push(target);
   // If the switch stalls, don't leave the screen dark.
   setTimeout(fadeIn, 4000);
