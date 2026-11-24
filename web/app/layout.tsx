@@ -5,7 +5,7 @@ import RotateLock from "@/components/RotateLock";
 import ScreenMenu from "@/components/ScreenMenu";
 
 export const metadata: Metadata = {
-  title: "Mason TV",
+  title: "HPD TV",
   robots: { index: false, follow: false },
 };
 
