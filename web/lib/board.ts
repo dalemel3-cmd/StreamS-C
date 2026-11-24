@@ -64,32 +64,32 @@ export const METRICS: Record<
   bench: {
     metric: "Bench",
     title: "Bench Press",
-    note: "Est. max · sets of 5 or fewer",
+    note: "Sets of 5 or fewer",
   },
   squat: {
     metric: "Squat",
     title: "Back Squat",
-    note: "Est. max · sets of 5 or fewer",
+    note: "Sets of 5 or fewer",
   },
   "front-squat": {
     metric: "Front Squat",
     title: "Front Squat",
-    note: "Est. max · sets of 5 or fewer",
+    note: "Sets of 5 or fewer",
   },
   "hang-clean": {
     metric: "Hang Clean",
     title: "Hang Clean",
-    note: "Est. max · sets of 5 or fewer",
+    note: "Sets of 5 or fewer",
   },
   "power-clean": {
     metric: "Power Clean",
     title: "Power Clean",
-    note: "Est. max · sets of 5 or fewer",
+    note: "Sets of 5 or fewer",
   },
   deadlift: {
     metric: "Deadlift",
     title: "Deadlift",
-    note: "Est. max · sets of 5 or fewer",
+    note: "Sets of 5 or fewer",
   },
   vertical: { metric: "Vertical", title: "Vertical Jump", note: "Arm swing" },
   "vertical-no-arms": {
