@@ -67,7 +67,7 @@ html.leaving body {
   list-style: none;
   display: grid;
   grid-auto-flow: column;
-  grid-template-rows: repeat(9, auto);
+  grid-template-rows: repeat(11, auto);
   column-gap: 2.4vw;
   row-gap: 0.4vw;
 }
