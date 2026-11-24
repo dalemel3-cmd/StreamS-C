@@ -4,38 +4,78 @@ import Frame from "@/components/board/Frame";
 import styles from "@/components/board/board.module.css";
 import { useBoard } from "@/components/board/useBoard";
 import { useRotate } from "@/components/board/useRotate";
-import { METRICS, UNIT_LABEL, formatValue, ranked } from "@/lib/board";
+import { useSportFilter } from "@/components/board/useSportFilter";
+import {
+  METRICS,
+  UNIT_LABEL,
+  formatValue,
+  ranked,
+  sportsIn,
+} from "@/lib/board";
 
-const SHOW = ["bench", "squat", "front-squat", "hang-clean", "power-clean", "vertical", "vertical-no-arms", "fly-10"];
-const dateFmt = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", timeZone: "UTC" });
+const SHOW = [
+  "bench",
+  "squat",
+  "front-squat",
+  "hang-clean",
+  "power-clean",
+  "vertical",
+  "vertical-no-arms",
+  "fly-10",
+];
+const dateFmt = new Intl.DateTimeFormat("en-US", {
+  month: "short",
+  day: "numeric",
+  timeZone: "UTC",
+});
 
 export default function Records() {
   const { board, offline } = useBoard();
-  useRotate(25);
-
-  const records = SHOW.map((slug) => ({ def: METRICS[slug], top: ranked(board, METRICS[slug].metric, null)[0] })).filter(
-    (r) => r.top,
-  );
+  const sport = useSportFilter(sportsIn(board));
+  const records = SHOW.map((slug) => ({
+    def: METRICS[slug],
+    top: ranked(board, METRICS[slug].metric, sport)[0],
+  })).filter((r) => r.top);
+  useRotate(25, Boolean(board && sport && records.length === 0));
 
   return (
-    <Frame eyebrow="Shiloh HPD · All-time" title="School records" updated={board?.generated_at} offline={offline}>
+    <Frame
+      eyebrow={`Shiloh HPD · ${sport ?? "All sports"} · All-time`}
+      title={sport ? `${sport} records` : "School records"}
+      filter="OK: change sport"
+      updated={board?.generated_at}
+      offline={offline}
+    >
       {records.length === 0 ? (
-        <div className={styles.empty}>Loading…</div>
+        <div className={styles.empty}>
+          {board ? "No marks yet" : "Loading…"}
+        </div>
       ) : (
-        <div className={styles.cards} style={{ gridTemplateColumns: "repeat(4, 1fr)" }}>
+        <div
+          className={styles.cards}
+          style={{ gridTemplateColumns: "repeat(4, 1fr)" }}
+        >
           {records.map(({ def, top }) => (
             <div key={def.metric} className={styles.card}>
               <span className={styles.cardLabel}>
-                {def.metric === "Vertical (no arms)" ? "Vertical · No arms" : def.title}
+                {def.metric === "Vertical (no arms)"
+                  ? "Vertical · No arms"
+                  : def.title}
               </span>
               <span>
-                <span className={styles.cardValue}>{formatValue(top.value, top.unit)}</span>
+                <span className={styles.cardValue}>
+                  {formatValue(top.value, top.unit)}
+                </span>
                 <span className={styles.unit}>{UNIT_LABEL[top.unit]}</span>
               </span>
               <span className={styles.who}>
-                <span className={styles.name} style={{ fontSize: 44 }}>{top.name}</span>
+                <span className={styles.name} style={{ fontSize: 44 }}>
+                  {top.name}
+                </span>
                 <span className={styles.meta}>
-                  {top.sport} · {dateFmt.format(new Date(top.date))}
+                  {[!sport && top.sport, dateFmt.format(new Date(top.date))]
+                    .filter(Boolean)
+                    .join(" · ")}
                 </span>
               </span>
             </div>

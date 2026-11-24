@@ -13,8 +13,18 @@ const LAST_KEY = "rotate.last";
  *
  * Guards: each page advances at most once, and if another advance happened less
  * than `seconds` ago (a stray timer from a page that was still loading), we wait instead.
+ *
+ * `skip` (e.g. the chosen sport has no marks here) moves on right away.
  */
-export function useRotate(seconds: number) {
+export function useRotate(seconds: number, skip = false) {
+  useEffect(() => {
+    if (!skip) return;
+    try {
+      sessionStorage.setItem(LAST_KEY, String(Date.now()));
+    } catch {}
+    goNext().catch(() => {});
+  }, [skip]);
+
   useEffect(() => {
     if (new URLSearchParams(location.search).get("rotate") === "0") return;
     const periodMs = seconds * 1000;
@@ -38,12 +48,7 @@ export function useRotate(seconds: number) {
         sessionStorage.setItem(LAST_KEY, String(Date.now()));
       } catch {}
       try {
-        const { screens } = (await (await fetch("/screens.json", { cache: "no-store" })).json()) as {
-          screens: { path: string }[];
-        };
-        const i = screens.findIndex((s) => s.path === location.pathname);
-        const next = i >= 0 ? screens[(i + 1) % screens.length] : screens[0];
-        location.href = next.path;
+        await goNext();
       } catch {
         // screens.json didn't load (network blip): try again shortly instead of stalling on this screen.
         done = false;
@@ -62,4 +67,15 @@ export function useRotate(seconds: number) {
       window.removeEventListener("keydown", onKey);
     };
   }, [seconds]);
+}
+
+async function goNext() {
+  const { screens } = (await (
+    await fetch("/screens.json", { cache: "no-store" })
+  ).json()) as {
+    screens: { path: string }[];
+  };
+  const i = screens.findIndex((s) => s.path === location.pathname);
+  const next = i >= 0 ? screens[(i + 1) % screens.length] : screens[0];
+  location.href = next.path;
 }
