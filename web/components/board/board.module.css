@@ -284,3 +284,36 @@
   vertical-align: bottom;
   padding-bottom: 6px;
 }
+
+.upBig {
+  color: #7fd08a;
+}
+
+.downBig {
+  color: #e57b6b;
+}
+
+.table .delta {
+  font-size: 36px;
+  font-weight: 600;
+}
+
+.from {
+  display: block;
+  font-size: 32px;
+  color: var(--muted);
+  line-height: 1.1;
+}
+
+.table:has(.from) td {
+  padding: 2px 12px;
+  line-height: 1.02;
+}
+
+.table:has(.from) .big {
+  font-size: 50px;
+}
+
+.table:has(.from) th.sub {
+  padding: 6px 12px 0;
+}
