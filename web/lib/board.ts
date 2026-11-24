@@ -41,6 +41,10 @@ export type Board = {
   trends: Trend[];
   gains?: Gain[];
   semester?: string;
+  semester_bests?: Pick<
+    Best,
+    "name" | "sport" | "metric" | "unit" | "higher" | "value" | "date"
+  >[];
   stale?: boolean;
 };
 

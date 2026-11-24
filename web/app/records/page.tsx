@@ -5,13 +5,7 @@ import styles from "@/components/board/board.module.css";
 import { useBoard } from "@/components/board/useBoard";
 import { useRotate } from "@/components/board/useRotate";
 import { useSportFilter } from "@/components/board/useSportFilter";
-import {
-  METRICS,
-  UNIT_LABEL,
-  formatValue,
-  ranked,
-  sportsIn,
-} from "@/lib/board";
+import { METRICS, UNIT_LABEL, formatValue, sportsIn } from "@/lib/board";
 
 const SHOW = [
   "bench",
@@ -34,14 +28,20 @@ export default function Records() {
   const sport = useSportFilter(sportsIn(board));
   const records = SHOW.map((slug) => ({
     def: METRICS[slug],
-    top: ranked(board, METRICS[slug].metric, sport)[0],
+    // This semester's best for the metric (falls back to all marks if the feed predates semester_bests).
+    top: (board?.semester_bests ?? board?.bests ?? [])
+      .filter(
+        (b) =>
+          b.metric === METRICS[slug].metric && (!sport || b.sport === sport),
+      )
+      .sort((a, b) => (a.higher ? b.value - a.value : a.value - b.value))[0],
   })).filter((r) => r.top);
   useRotate(25, Boolean(board && sport && records.length === 0));
 
   return (
     <Frame
-      eyebrow={`Shiloh HPD · ${sport ?? "All sports"} · All-time`}
-      title={sport ? `${sport} records` : "School records"}
+      eyebrow={`Shiloh HPD · ${sport ?? "All sports"} · ${board?.semester ?? "This semester"}`}
+      title="Semester records"
       filter="OK: change sport"
       updated={board?.generated_at}
       offline={offline}
