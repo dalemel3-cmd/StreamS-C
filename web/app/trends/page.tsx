@@ -7,17 +7,39 @@ import { useRotate } from "@/components/board/useRotate";
 import { useSportFilter } from "@/components/board/useSportFilter";
 import { formatValue, sportsIn, type Trend } from "@/lib/board";
 
-const COLS = [
-  { metric: "Bench", label: "Bench", unit: "lb" as const, higher: true },
-  { metric: "Squat", label: "Squat", unit: "lb" as const, higher: true },
+// Paired columns under a group header: Bench | Squat (Back, Front) | Clean (Hang, Power) | Vertical (Arm swing, Hands on hips).
+const GROUPS = [
   {
-    metric: "Hang Clean",
-    label: "Hang Clean",
-    unit: "lb" as const,
-    higher: true,
+    label: "Bench",
+    cols: [{ metric: "Bench", label: "", unit: "lb" as const }],
   },
-  { metric: "Vertical", label: "Vertical", unit: "in" as const, higher: true },
+  {
+    label: "Squat",
+    cols: [
+      { metric: "Squat", label: "Back", unit: "lb" as const },
+      { metric: "Front Squat", label: "Front", unit: "lb" as const },
+    ],
+  },
+  {
+    label: "Clean",
+    cols: [
+      { metric: "Hang Clean", label: "Hang", unit: "lb" as const },
+      { metric: "Power Clean", label: "Power", unit: "lb" as const },
+    ],
+  },
+  {
+    label: "Vertical",
+    cols: [
+      { metric: "Vertical", label: "Arm swing", unit: "in" as const },
+      {
+        metric: "Vertical (no arms)",
+        label: "Hands on hips",
+        unit: "in" as const,
+      },
+    ],
+  },
 ];
+const COLS = GROUPS.flatMap((g) => g.cols.map((c) => ({ ...c, higher: true })));
 const MIN_ATHLETES = 3;
 
 /** First vs latest month team average for one sport + metric, when both months have enough athletes. */
@@ -53,6 +75,12 @@ export default function Trends() {
       cells: COLS.map((c) => change(trends, sport, c.metric)),
     }))
     .filter((r) => r.cells.some(Boolean))
+    // Fullest rows first so teams with data in more columns make the cut.
+    .sort(
+      (a, b) =>
+        b.cells.filter(Boolean).length - a.cells.filter(Boolean).length ||
+        a.sport.localeCompare(b.sport),
+    )
     .slice(0, 5);
   useRotate(25, Boolean(board && sport && sports.length === 0));
 
@@ -73,10 +101,30 @@ export default function Trends() {
         <table className={styles.table}>
           <thead>
             <tr>
-              <th>Team</th>
-              {COLS.map((c) => (
-                <th key={c.metric}>{c.label}</th>
+              <th rowSpan={2}>Team</th>
+              {GROUPS.map((g) => (
+                <th
+                  key={g.label}
+                  colSpan={g.cols.length}
+                  rowSpan={g.cols.length === 1 ? 2 : 1}
+                  className={
+                    g.cols.length === 1
+                      ? `${styles.group} ${styles.solo}`
+                      : styles.group
+                  }
+                >
+                  {g.label}
+                </th>
               ))}
+            </tr>
+            <tr>
+              {GROUPS.filter((g) => g.cols.length > 1).flatMap((g) =>
+                g.cols.map((c) => (
+                  <th key={c.metric} className={styles.sub}>
+                    {c.label}
+                  </th>
+                )),
+              )}
             </tr>
           </thead>
           <tbody>
@@ -100,7 +148,9 @@ export default function Trends() {
                         {formatValue(cell.latest, col.unit)}
                       </span>
                       {cell.delta != null && Math.abs(cell.delta) >= 0.05 && (
-                        <span className={better ? styles.up : styles.down}>
+                        <span
+                          className={`${styles.delta} ${better ? styles.up : styles.down}`}
+                        >
                           {cell.delta > 0 ? "▲" : "▼"}{" "}
                           {formatValue(Math.abs(cell.delta), col.unit)}
                         </span>

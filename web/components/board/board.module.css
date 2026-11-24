@@ -242,3 +242,45 @@
 .dim {
   color: var(--muted);
 }
+
+/* Trends: six data columns */
+.table .group {
+  text-align: center;
+  border-bottom: 2px solid var(--accent);
+  padding: 0 12px 6px;
+}
+
+.table .sub {
+  font-size: 32px;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  padding: 6px 16px 0;
+}
+
+.table:has(.sub) td {
+  padding: 8px 16px;
+}
+
+.delta {
+  margin-left: 8px;
+  white-space: nowrap;
+}
+
+.table .solo {
+  border-bottom: none;
+  vertical-align: bottom;
+  text-align: right;
+}
+
+.table:has(.sub) td {
+  white-space: nowrap;
+}
+
+.table th.sub:first-child {
+  text-align: right;
+}
+
+.table th[rowspan] {
+  vertical-align: bottom;
+  padding-bottom: 6px;
+}
