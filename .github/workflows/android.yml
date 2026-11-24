@@ -58,9 +58,9 @@ jobs:
           fi
           VC=$(grep -oP 'versionCode = \K[0-9]+' app/build.gradle.kts)
           TAG="android-v$VC"
-          cp app/build/outputs/apk/release/app-release.apk "mason-tv-v$VC.apk"
+          cp app/build/outputs/apk/release/app-release.apk "hpd-tv-v$VC.apk"
           if gh release view "$TAG" >/dev/null 2>&1; then
-            gh release upload "$TAG" "mason-tv-v$VC.apk" --clobber
+            gh release upload "$TAG" "hpd-tv-v$VC.apk" --clobber
           else
-            gh release create "$TAG" "mason-tv-v$VC.apk" --prerelease --title "Mason TV APK v$VC" --notes "Built from ${GITHUB_SHA::7}. Install: adb install -r mason-tv-v$VC.apk"
+            gh release create "$TAG" "hpd-tv-v$VC.apk" --prerelease --title "HPD TV APK v$VC" --notes "Built from ${GITHUB_SHA::7}. Install: adb install -r hpd-tv-v$VC.apk"
           fi

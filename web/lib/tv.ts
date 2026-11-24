@@ -1,4 +1,4 @@
-// Contract between screens and the Mason TV Android shell.
+// Contract between screens and the HPD TV Android shell.
 // The shell calls window.masonTv.onOk() when the remote's center button is pressed.
 // Left/Right are handled by the shell itself; Up/Down and other keys reach the page.
 
