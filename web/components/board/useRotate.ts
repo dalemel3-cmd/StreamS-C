@@ -6,8 +6,9 @@ const PAUSE_AFTER_KEY_MS = 2 * 60 * 1000;
 const LAST_KEY = "rotate.last";
 
 /**
- * Auto-rotate to the next screen after `seconds`. On the stick the shell moves on
- * (so its D-pad position stays in sync); in a browser we follow screens.json.
+ * Auto-rotate to the next screen in screens.json after `seconds`. The page navigates
+ * itself (not via the shell) so rotation works even when the app is holding an old or
+ * default screen list. A page not in the list goes to the first screen.
  * Any key press pauses rotation for two minutes. `?rotate=0` turns it off.
  *
  * Guards: each page advances at most once, and if another advance happened less
@@ -36,13 +37,13 @@ export function useRotate(seconds: number) {
       try {
         sessionStorage.setItem(LAST_KEY, String(Date.now()));
       } catch {}
-      if (window.MasonTV) return window.MasonTV.nextScreen();
       try {
         const { screens } = (await (await fetch("/screens.json", { cache: "no-store" })).json()) as {
           screens: { path: string }[];
         };
         const i = screens.findIndex((s) => s.path === location.pathname);
-        location.href = screens[(i + 1) % screens.length].path;
+        const next = i >= 0 ? screens[(i + 1) % screens.length] : screens[0];
+        location.href = next.path;
       } catch {
         done = false;
       }
