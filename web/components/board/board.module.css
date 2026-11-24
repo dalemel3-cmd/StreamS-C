@@ -266,12 +266,6 @@
   white-space: nowrap;
 }
 
-.table .solo {
-  border-bottom: none;
-  vertical-align: bottom;
-  text-align: right;
-}
-
 .table:has(.sub) td {
   white-space: nowrap;
 }
@@ -298,22 +292,15 @@
   font-weight: 600;
 }
 
-.from {
-  display: block;
-  font-size: 32px;
-  color: var(--muted);
-  line-height: 1.1;
-}
-
-.table:has(.from) td {
+.table:has(.sub) td {
   padding: 2px 12px;
   line-height: 1.02;
 }
 
-.table:has(.from) .big {
+.table:has(.sub) .big {
   font-size: 50px;
 }
 
-.table:has(.from) th.sub {
+.table:has(.sub) th.sub {
   padding: 6px 12px 0;
 }

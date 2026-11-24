@@ -7,7 +7,7 @@ import { useRotate } from "@/components/board/useRotate";
 import { useSportFilter } from "@/components/board/useSportFilter";
 import { formatValue, sportsIn } from "@/lib/board";
 
-// Paired columns under a group header: Bench | Squat (Back, Front) | Clean (Hang, Power) | Vertical (Arm swing, Hands on hips).
+// Columns under a group header (gold underline on every group): Bench | Squat (Back, Front) | Clean (Hang, Power) | Vertical (Arm swing, Hands on hips).
 const GROUPS = [
   {
     label: "Bench",
@@ -91,19 +91,14 @@ export default function Trends() {
                 <th
                   key={g.label}
                   colSpan={g.cols.length}
-                  rowSpan={g.cols.length === 1 ? 2 : 1}
-                  className={
-                    g.cols.length === 1
-                      ? `${styles.group} ${styles.solo}`
-                      : styles.group
-                  }
+                  className={styles.group}
                 >
                   {g.label}
                 </th>
               ))}
             </tr>
             <tr>
-              {GROUPS.filter((g) => g.cols.length > 1).flatMap((g) =>
+              {GROUPS.flatMap((g) =>
                 g.cols.map((c) => (
                   <th key={c.metric} className={styles.sub}>
                     {c.label}
@@ -151,9 +146,6 @@ export default function Trends() {
                         {flat
                           ? "±0"
                           : `${change > 0 ? "+" : "−"}${formatValue(Math.abs(change), g.unit)}`}
-                      </span>
-                      <span className={styles.from}>
-                        from {formatValue(start, g.unit)}
                       </span>
                     </td>
                   );
