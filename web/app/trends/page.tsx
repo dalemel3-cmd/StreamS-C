@@ -69,9 +69,11 @@ export default function Trends() {
 
   return (
     <Frame
-      eyebrow={`Shiloh HPD · ${sport ?? "All sports"} · Avg change per athlete`}
+      eyebrow={`Shiloh HPD · ${sport ?? "All sports"} · Team average max`}
       title="Season trends"
-      note="Avg best now vs first 2 weeks"
+      note={
+        board?.semester ? `${board.semester} · start → now` : "This semester"
+      }
       filter="OK: change sport"
       updated={board?.generated_at}
       offline={offline}
