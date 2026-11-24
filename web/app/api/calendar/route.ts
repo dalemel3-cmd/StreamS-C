@@ -19,7 +19,7 @@ export async function GET() {
       signal: AbortSignal.timeout(10_000),
     });
     if (!res.ok) throw new Error(`calendar upstream ${res.status}`);
-    const data: Calendar = { events: upcomingEvents(await res.text()), updated: new Date().toISOString() };
+    const data: Calendar = { events: upcomingEvents(await res.text(), Date.now(), 24, 8), updated: new Date().toISOString() };
     lastGood = data;
     return NextResponse.json(data, { headers: { "Cache-Control": "s-maxage=300, stale-while-revalidate=300" } });
   } catch (err) {
