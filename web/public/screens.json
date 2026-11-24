@@ -1,16 +1,22 @@
 {
-  "version": 2,
+  "version": 3,
   "screens": [
-    { "name": "bench", "path": "/leaders/bench", "refreshSec": 300 },
-    { "name": "squat", "path": "/leaders/squat", "refreshSec": 300 },
-    { "name": "front-squat", "path": "/leaders/front-squat", "refreshSec": 300 },
-    { "name": "hang-clean", "path": "/leaders/hang-clean", "refreshSec": 300 },
-    { "name": "vertical", "path": "/leaders/vertical", "refreshSec": 300 },
-    { "name": "vertical-no-arms", "path": "/leaders/vertical-no-arms", "refreshSec": 300 },
-    { "name": "fly-10", "path": "/leaders/fly-10", "refreshSec": 300 },
-    { "name": "prs", "path": "/prs", "refreshSec": 300 },
-    { "name": "records", "path": "/records", "refreshSec": 300 },
-    { "name": "trends", "path": "/trends", "refreshSec": 300 },
-    { "name": "clock", "path": "/clock", "refreshSec": 600 }
+    {"name": "bench", "path": "/leaders/bench", "refreshSec": 300, "title": "Bench"},
+    {"name": "squat", "path": "/leaders/squat", "refreshSec": 300, "title": "Back squat"},
+    {"name": "front-squat", "path": "/leaders/front-squat", "refreshSec": 300, "title": "Front squat"},
+    {"name": "hang-clean", "path": "/leaders/hang-clean", "refreshSec": 300, "title": "Hang clean"},
+    {"name": "vertical", "path": "/leaders/vertical", "refreshSec": 300, "title": "Vertical \u00b7 arm swing"},
+    {"name": "vertical-no-arms", "path": "/leaders/vertical-no-arms", "refreshSec": 300, "title": "Vertical \u00b7 hands on hips"},
+    {"name": "fly-10", "path": "/leaders/fly-10", "refreshSec": 300, "title": "Fly 10"},
+    {"name": "prs", "path": "/prs", "refreshSec": 300, "title": "New PRs"},
+    {"name": "records", "path": "/records", "refreshSec": 300, "title": "Semester records"},
+    {"name": "trends", "path": "/trends", "refreshSec": 300, "title": "Season trends"},
+    {"name": "improved", "title": "Most improved", "path": "/improved", "refreshSec": 300},
+    {"name": "club-1000", "title": "1,000 lb club", "path": "/clubs/1000", "refreshSec": 300},
+    {"name": "club-19mph", "title": "19 mph club", "path": "/clubs/19mph", "refreshSec": 300, "default": "off"},
+    {"name": "club-20mph", "title": "20 mph club", "path": "/clubs/20mph", "refreshSec": 300, "default": "off"},
+    {"name": "club-21mph", "title": "21 mph club", "path": "/clubs/21mph", "refreshSec": 300, "default": "off"},
+    {"name": "club-22mph", "title": "22 mph club", "path": "/clubs/22mph", "refreshSec": 300, "default": "off"},
+    {"name": "clock", "path": "/clock", "refreshSec": 600, "title": "Clock"}
   ]
 }

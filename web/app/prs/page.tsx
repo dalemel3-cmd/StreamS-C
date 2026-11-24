@@ -10,6 +10,7 @@ import {
   UNIT_LABEL,
   formatValue,
   inSport,
+  round5,
   sportsIn,
 } from "@/lib/board";
 
@@ -35,7 +36,11 @@ export default function PRs() {
     )
     .map((b) => ({
       ...b,
-      gain: Math.abs(b.value - (b.previous as number)),
+      // Lifts: the change between the two numbers as shown (nearest 5 lb), like the app.
+      gain:
+        b.unit === "lb"
+          ? round5(b.value) - round5(b.previous as number)
+          : Math.abs(b.value - (b.previous as number)),
       pct: Math.abs(b.value / (b.previous as number) - 1),
     }))
     .sort((a, b) => b.pct - a.pct)
@@ -68,10 +73,12 @@ export default function PRs() {
                   {formatValue(b.value, b.unit)}
                 </span>
                 <span className={styles.unit}>{UNIT_LABEL[b.unit]}</span>
-                <span className={styles.gain}>
-                  {b.higher ? "+" : "−"}
-                  {formatValue(b.gain, b.unit)}
-                </span>
+                {b.gain > 0 && (
+                  <span className={styles.gain}>
+                    {b.higher ? "+" : "−"}
+                    {formatValue(b.gain, b.unit)}
+                  </span>
+                )}
               </span>
               <span>
                 <span className={styles.name}>{b.name}</span>

@@ -4,6 +4,12 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { LOCK_EVENT, isLocked } from "@/lib/rotateLock";
 import { fadeIn, fadeOut } from "@/lib/transition";
+import {
+  isMenuOpen,
+  loadScreens,
+  modeOf,
+  nextScreenPath,
+} from "@/lib/screenSettings";
 
 type Router = ReturnType<typeof useRouter>;
 
@@ -20,7 +26,8 @@ const LAST_KEY = "rotate.last";
  * than `seconds` ago (a stray timer from a page that was still loading), we wait instead.
  *
  * `skip` (e.g. the chosen sport has no marks here) moves on right away.
- * While locked (Up on the remote), neither happens.
+ * While locked (Up on the remote) or while the settings menu is open, neither happens.
+ * Screens set to Off are skipped; a Stand-alone screen stays up with no rotation.
  *
  * Screens switch in-app with a short fade (no full page reload), and the next screen
  * is prefetched while this one is showing.
@@ -31,8 +38,15 @@ export function useRotate(seconds: number, skip = false) {
   // This screen just mounted: fade it in and warm up the next one.
   useEffect(() => {
     fadeIn();
-    nextPath()
-      .then((p) => router.prefetch(p))
+    loadScreens()
+      .then((screens) => {
+        // A stand-alone screen is set and this isn't it (e.g. the app just launched): go there now.
+        const only = screens.find((s) => modeOf(s) === "only");
+        if (only && only.path !== location.pathname)
+          return goNext(router, only.path);
+        const p = nextScreenPath(screens, location.pathname);
+        if (p) router.prefetch(p);
+      })
       .catch(() => {});
   }, [router]);
 
@@ -61,7 +75,7 @@ export function useRotate(seconds: number, skip = false) {
 
     const next = async (retry = false): Promise<void> => {
       if (done) return;
-      if (isLocked()) return arm(periodMs);
+      if (isLocked() || isMenuOpen()) return arm(periodMs);
       const since = Date.now() - lastAdvance();
       if (!retry && since >= 0 && since < periodMs * 0.9)
         return arm(periodMs - since);
@@ -110,29 +124,17 @@ export function useRotate(seconds: number, skip = false) {
   }, [seconds, router]);
 }
 
-/** Path of the screen after this one in screens.json (the first screen if this one isn't listed). */
-async function nextPath(): Promise<string> {
-  // Give up after 8 s so a hung request can't freeze rotation.
-  const ctrl = new AbortController();
-  const t = setTimeout(() => ctrl.abort(), 8000);
-  let screens: { path: string }[];
-  try {
-    ({ screens } = (await (
-      await fetch("/screens.json", { cache: "no-store", signal: ctrl.signal })
-    ).json()) as {
-      screens: { path: string }[];
-    });
-  } finally {
-    clearTimeout(t);
-  }
-  const i = screens.findIndex((s) => s.path === location.pathname);
-  return (i >= 0 ? screens[(i + 1) % screens.length] : screens[0]).path;
+/** Next screen per screens.json and this TV's settings (null = stay on this one). */
+async function nextPath(): Promise<string | null> {
+  return nextScreenPath(await loadScreens(), location.pathname);
 }
 
-async function goNext(router: Router) {
-  const path = await nextPath();
+/** Switch to `path` (or the next screen) with a fade. Exported for the settings menu. */
+export async function goNext(router: Router, path?: string | null) {
+  const target = path ?? (await nextPath());
+  if (!target || target === location.pathname) return;
   await fadeOut();
-  router.push(path);
+  router.push(target);
   // If the switch stalls, don't leave the screen dark.
   setTimeout(fadeIn, 4000);
 }

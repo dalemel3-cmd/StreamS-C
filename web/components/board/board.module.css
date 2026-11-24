@@ -304,3 +304,15 @@
 .table:has(.sub) th.sub {
   padding: 6px 12px 0;
 }
+
+/* Athlete tables (Most improved, clubs): 8 rows fit the body. */
+.tight td {
+  padding: 0 24px;
+  line-height: 1.25;
+}
+.tight .big {
+  font-size: 48px;
+}
+.tight .unit {
+  font-size: 28px;
+}
