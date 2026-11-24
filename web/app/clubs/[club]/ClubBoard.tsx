@@ -154,9 +154,19 @@ export default function ClubBoard({ slug }: { slug: string }) {
       );
   } else {
     const all = speeds(bests, sport);
-    const members = all.filter((r) => r.mph >= club.mph);
+    // Tiers: each athlete only in their highest club (16 mph = 16.0 to 16.9). The top club has no ceiling.
+    const top = Math.max(
+      ...Object.values(CLUBS).map((c) => (c.kind === "speed" ? c.mph : 0)),
+    );
+    // Compare the speed as shown (1 decimal), so 16.97 (shown 17.0) counts as 17.
+    const shown = (r: SpeedRow) => Number(r.mph.toFixed(1));
+    const members = all.filter(
+      (r) =>
+        shown(r) >= club.mph && (club.mph === top || shown(r) < club.mph + 1),
+    );
     count = members.length;
-    const rows = (members.length ? members : all).slice(0, 8);
+    const below = all.filter((r) => shown(r) < club.mph);
+    const rows = (members.length ? members : below).slice(0, 8);
     body =
       rows.length === 0 ? null : (
         <table className={`${styles.table} ${styles.tight}`}>
