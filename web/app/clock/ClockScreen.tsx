@@ -34,7 +34,12 @@ function whenLabel(e: CalEvent, now: Date): string {
   const startsBefore = start.getTime() < now.getTime();
   const day = startsBefore ? "Today" : dayLabel(start, now);
   if (e.allDay) return `${day} · All day`;
-  if (startsBefore) return `Now · until ${shortTime.format(new Date(e.end ?? e.start))}`;
+  if (startsBefore) {
+    // Multi-day events say which day they end ("until Fri, Nov 27 11:45 PM").
+    const end = new Date(e.end ?? e.start);
+    const endDay = dayLabel(end, now);
+    return `Now · until ${endDay === "Today" ? "" : endDay + " "}${shortTime.format(end)}`;
+  }
   return `${day} · ${shortTime.format(start)}`;
 }
 
