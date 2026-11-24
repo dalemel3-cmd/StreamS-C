@@ -53,24 +53,24 @@ export const METRICS: Record<
   string,
   { metric: string; title: string; note: string }
 > = {
-  bench: { metric: "Bench", title: "Bench Press", note: "Estimated 1RM" },
-  squat: { metric: "Squat", title: "Back Squat", note: "Estimated 1RM" },
+  bench: { metric: "Bench", title: "Bench Press", note: "Est. max · sets of 5 or fewer" },
+  squat: { metric: "Squat", title: "Back Squat", note: "Est. max · sets of 5 or fewer" },
   "front-squat": {
     metric: "Front Squat",
     title: "Front Squat",
-    note: "Estimated 1RM",
+    note: "Est. max · sets of 5 or fewer",
   },
   "hang-clean": {
     metric: "Hang Clean",
     title: "Hang Clean",
-    note: "Estimated 1RM",
+    note: "Est. max · sets of 5 or fewer",
   },
   "power-clean": {
     metric: "Power Clean",
     title: "Power Clean",
-    note: "Estimated 1RM",
+    note: "Est. max · sets of 5 or fewer",
   },
-  deadlift: { metric: "Deadlift", title: "Deadlift", note: "Estimated 1RM" },
+  deadlift: { metric: "Deadlift", title: "Deadlift", note: "Est. max · sets of 5 or fewer" },
   vertical: { metric: "Vertical", title: "Vertical Jump", note: "Arm swing" },
   "vertical-no-arms": {
     metric: "Vertical (no arms)",
