@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import AutoReload from "@/components/AutoReload";
 import RotateLock from "@/components/RotateLock";
+import ScreenMenu from "@/components/ScreenMenu";
 
 export const metadata: Metadata = {
   title: "Mason TV",
@@ -41,6 +42,7 @@ export default function RootLayout({
         {children}
         <AutoReload />
         <RotateLock />
+        <ScreenMenu />
       </body>
     </html>
   );

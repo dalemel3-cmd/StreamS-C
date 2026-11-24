@@ -9,10 +9,14 @@
   --display: "Oswald", "Roboto Condensed", "Roboto", sans-serif;
 }
 
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
-
-html, body {
+html,
+body {
   width: 100%;
   height: 100%;
   overflow: hidden;
@@ -30,4 +34,73 @@ body {
 }
 html.leaving body {
   opacity: 0;
+}
+
+/* Screen settings menu (components/ScreenMenu.tsx). Sized in vw so it matches the scaled 1920 canvas. */
+.menuBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(3, 10, 20, 0.82);
+}
+.menu {
+  width: 86vw;
+  padding: 2.2vw 2.8vw;
+  background: #0b1524;
+  border: 0.16vw solid var(--accent);
+  border-radius: 1vw;
+}
+.menuTitle {
+  font: 700 3.4vw/1 var(--display);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.menuHint {
+  margin: 0.6vw 0 1.4vw;
+  font-size: 1.7vw;
+  color: var(--muted);
+}
+.menu ul {
+  list-style: none;
+  display: grid;
+  grid-auto-flow: column;
+  grid-template-rows: repeat(9, auto);
+  column-gap: 2.4vw;
+  row-gap: 0.4vw;
+}
+.menu li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1vw;
+  padding: 0.45vw 1vw;
+  border-radius: 0.5vw;
+  font-size: 1.75vw;
+  font-weight: 600;
+  border: 0.16vw solid transparent;
+}
+.menu li.menuSel {
+  border-color: var(--accent);
+  background: rgba(184, 156, 91, 0.14);
+}
+.menuMode {
+  font: 600 1.6vw/1 var(--display);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.menuMode-on {
+  color: var(--fg);
+}
+.menuMode-only {
+  color: var(--accent);
+}
+.menuMode-off {
+  color: var(--muted);
+}
+.menuDone {
+  color: var(--accent);
 }

@@ -34,7 +34,7 @@ export async function GET() {
     }
     const data = (await res.json()) as Board;
     lastGood = data;
-    return NextResponse.json(data, { headers: { "Cache-Control": "s-maxage=120, stale-while-revalidate=600" } });
+    return NextResponse.json(data, { headers: { "Cache-Control": "s-maxage=60, stale-while-revalidate=60" } });
   } catch (err) {
     console.error("board fetch failed:", err);
     if (lastGood) return NextResponse.json({ ...lastGood, stale: true });

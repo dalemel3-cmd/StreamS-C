@@ -1,5 +1,6 @@
 // Contract between screens and the Mason TV Android shell.
 // The shell calls window.masonTv.onOk() when the remote's center button is pressed.
+// Left/Right are handled by the shell itself; Up/Down and other keys reach the page.
 
 type MasonTvHooks = { onOk?: () => void };
 
@@ -7,21 +8,48 @@ declare global {
   interface Window {
     masonTv?: MasonTvHooks;
     // Native bridge injected by the APK (absent in a desktop browser).
-    MasonTV?: { nextScreen(): void; prevScreen(): void; getDeviceName(): string };
+    MasonTV?: {
+      nextScreen(): void;
+      prevScreen(): void;
+      getDeviceName(): string;
+    };
   }
 }
 
-/** Register the OK-button handler. In a desktop browser, Enter does the same thing. Returns a cleanup fn. */
+// One OK dispatcher for the whole app: the settings menu (when open) gets OK first,
+// otherwise the current screen's handler (sport filter) does.
+let pageOk: (() => void) | null = null;
+let menuOk: (() => void) | null = null;
+let installed = false;
+
+function dispatchOk() {
+  if (menuOk) menuOk();
+  else pageOk?.();
+}
+
+function install() {
+  if (installed || typeof window === "undefined") return;
+  installed = true;
+  window.masonTv = { ...(window.masonTv ?? {}), onOk: dispatchOk };
+  // In a desktop browser, Enter does the same thing.
+  window.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") dispatchOk();
+  });
+}
+
+/** Register the screen's OK-button handler. Returns a cleanup fn. */
 export function onOk(handler: () => void): () => void {
-  window.masonTv = { ...(window.masonTv ?? {}), onOk: handler };
-  const key = (e: KeyboardEvent) => {
-    if (e.key === "Enter") handler();
-  };
-  window.addEventListener("keydown", key);
+  install();
+  pageOk = handler;
   return () => {
-    window.removeEventListener("keydown", key);
-    if (window.masonTv?.onOk === handler) delete window.masonTv.onOk;
+    if (pageOk === handler) pageOk = null;
   };
+}
+
+/** While the settings menu is open, OK goes to it instead of the screen. */
+export function setMenuOk(handler: (() => void) | null) {
+  install();
+  menuOk = handler;
 }
 
 /** Read/write localStorage without throwing (private mode, quota, etc.). */

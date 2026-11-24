@@ -5,7 +5,7 @@ import styles from "@/components/board/board.module.css";
 import { useBoard } from "@/components/board/useBoard";
 import { useRotate } from "@/components/board/useRotate";
 import { useSportFilter } from "@/components/board/useSportFilter";
-import { formatValue, sportsIn } from "@/lib/board";
+import { formatValue, round5, sportsIn } from "@/lib/board";
 
 // Columns under a group header (gold underline on every group): Bench | Squat (Back, Front) | Clean (Hang, Power) | Vertical (Arm swing, Hands on hips).
 const GROUPS = [
@@ -120,7 +120,7 @@ export default function Trends() {
                     );
                   // Weights round to the nearest 5 lb; the change is the difference of the two shown numbers.
                   const shown = (v: number) =>
-                    g.unit === "lb" ? Math.round(v / 5) * 5 : v;
+                    g.unit === "lb" ? round5(v) : v;
                   const now = shown(g.recent_avg);
                   const start = shown(g.base_avg);
                   const change =

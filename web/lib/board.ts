@@ -36,11 +36,22 @@ export type Gain = {
   improvement_pct: number; // percent, > 0 means better
 };
 
+/** One athlete's change this semester on one metric (first 2 weeks vs last 30 days of logging). */
+export type Improver = Pick<
+  Best,
+  "name" | "sport" | "sports" | "metric" | "unit" | "higher"
+> & {
+  start: number;
+  now: number;
+  days: number;
+};
+
 export type Board = {
   generated_at: string;
   bests: Best[];
   trends: Trend[];
   gains?: Gain[];
+  improvers?: Improver[];
   semester?: string;
   semester_bests?: Pick<
     Best,
@@ -100,10 +111,13 @@ export const METRICS: Record<
   "fly-10": { metric: "Fly 10", title: "Fly 10", note: "Fastest time" },
 };
 
+/** The HPD app shows estimated maxes to the nearest 5 lb (v5.16.5); ranking stays on the exact value. */
+export const round5 = (v: number) => Math.round(v / 5) * 5;
+
 export function formatValue(v: number, unit: Best["unit"]): string {
   if (unit === "s") return v.toFixed(2);
   if (unit === "in") return v.toFixed(1);
-  return String(Math.round(v));
+  return String(round5(v));
 }
 
 export const UNIT_LABEL: Record<Best["unit"], string> = {
