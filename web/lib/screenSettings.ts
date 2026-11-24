@@ -89,6 +89,39 @@ export function nextScreenPath(
   return null;
 }
 
+// Seconds each screen stays up. null = each screen's own default (20-25 s).
+const SECONDS_KEY = "rotate.seconds";
+export const SECONDS_STEPS: (number | null)[] = [
+  null,
+  10,
+  15,
+  20,
+  30,
+  45,
+  60,
+  90,
+];
+
+export function loadSeconds(): number | null {
+  try {
+    const v = Number(localStorage.getItem(SECONDS_KEY));
+    return SECONDS_STEPS.includes(v) ? v : null;
+  } catch {
+    return null;
+  }
+}
+
+export function saveSeconds(v: number | null) {
+  try {
+    if (v == null) localStorage.removeItem(SECONDS_KEY);
+    else localStorage.setItem(SECONDS_KEY, String(v));
+  } catch {}
+  window.dispatchEvent(new CustomEvent(SETTINGS_EVENT));
+}
+
+export const secondsLabel = (v: number | null) =>
+  v == null ? "Default" : `${v} sec`;
+
 let menuOpen = false;
 export const isMenuOpen = () => menuOpen;
 export const setMenuOpen = (v: boolean) => {

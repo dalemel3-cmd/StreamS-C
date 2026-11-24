@@ -10,8 +10,12 @@ import {
   type Mode,
   type ScreenEntry,
   loadScreens,
+  SECONDS_STEPS,
+  loadSeconds,
   loadSettings,
   modeOf,
+  saveSeconds,
+  secondsLabel,
   saveSettings,
   setMenuOpen,
   withMode,
@@ -21,7 +25,8 @@ const IDLE_CLOSE_MS = 30 * 1000;
 
 /**
  * Screen settings. Down opens it. Up/Down move, OK changes the highlighted screen
- * (In rotation -> Stand-alone -> Off), OK on Done (or 30 s idle) closes it.
+ * (In rotation -> Stand-alone -> Off), OK on "Seconds per screen" steps through
+ * Default/10/15/20/30/45/60/90 s, OK on Done (or 30 s idle) closes it.
  * Left/Right belong to the app shell, so the menu doesn't use them.
  */
 export default function ScreenMenu() {
@@ -29,9 +34,11 @@ export default function ScreenMenu() {
   const [open, setOpen] = useState(false);
   const [screens, setScreens] = useState<ScreenEntry[]>([]);
   const [settings, setSettings] = useState<Record<string, Mode>>({});
+  const [seconds, setSeconds] = useState<number | null>(null);
+  // Rows: 0 = seconds per screen, 1..n = screens, n+1 = Done.
   const [sel, setSel] = useState(0);
-  const state = useRef({ open, screens, settings, sel });
-  state.current = { open, screens, settings, sel };
+  const state = useRef({ open, screens, settings, sel, seconds });
+  state.current = { open, screens, settings, sel, seconds };
   const idle = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   const close = () => {
@@ -53,10 +60,19 @@ export default function ScreenMenu() {
   };
 
   const press = () => {
-    const { screens, settings, sel } = state.current;
+    const { screens, settings, sel, seconds } = state.current;
     touch();
-    if (sel >= screens.length) return close();
-    const s = screens[sel];
+    if (sel === 0) {
+      const next =
+        SECONDS_STEPS[
+          (SECONDS_STEPS.indexOf(seconds) + 1) % SECONDS_STEPS.length
+        ];
+      setSeconds(next);
+      saveSeconds(next);
+      return;
+    }
+    if (sel > screens.length) return close();
+    const s = screens[sel - 1];
     const next = withMode(
       screens,
       settings,
@@ -78,8 +94,9 @@ export default function ScreenMenu() {
             .then((list) => {
               setScreens(list);
               setSettings(loadSettings());
+              setSeconds(loadSeconds());
               const here = list.findIndex((s) => s.path === location.pathname);
-              setSel(Math.max(here, 0));
+              setSel(here + 1);
               setOpen(true);
               setMenuOpen(true);
               setMenuOk(press);
@@ -94,7 +111,7 @@ export default function ScreenMenu() {
         e.preventDefault();
         e.stopImmediatePropagation();
         touch();
-        const rows = screens.length + 1;
+        const rows = screens.length + 2;
         setSel((i) => (i + (e.key === "ArrowDown" ? 1 : -1) + rows) % rows);
       } else if (e.key === "Escape") {
         e.stopImmediatePropagation();
@@ -114,10 +131,19 @@ export default function ScreenMenu() {
         <div className="menuTitle">Screens</div>
         <div className="menuHint">Up/Down: choose · OK: change</div>
         <ul>
+          <li className={sel === 0 ? "menuSel" : undefined}>
+            <span>Seconds per screen</span>
+            <span className="menuMode menuMode-only">
+              {secondsLabel(seconds)}
+            </span>
+          </li>
           {screens.map((s, i) => {
             const mode = modeOf(s, settings);
             return (
-              <li key={s.path} className={i === sel ? "menuSel" : undefined}>
+              <li
+                key={s.path}
+                className={i + 1 === sel ? "menuSel" : undefined}
+              >
                 <span>{s.title ?? s.name}</span>
                 <span className={`menuMode menuMode-${mode}`}>
                   {MODE_LABEL[mode]}
@@ -126,7 +152,9 @@ export default function ScreenMenu() {
             );
           })}
           <li
-            className={sel === screens.length ? "menuSel menuDone" : "menuDone"}
+            className={
+              sel === screens.length + 1 ? "menuSel menuDone" : "menuDone"
+            }
           >
             <span>Done</span>
           </li>

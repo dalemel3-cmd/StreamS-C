@@ -5,8 +5,10 @@ import { useRouter } from "next/navigation";
 import { LOCK_EVENT, isLocked } from "@/lib/rotateLock";
 import { fadeIn, fadeOut } from "@/lib/transition";
 import {
+  SETTINGS_EVENT,
   isMenuOpen,
   loadScreens,
+  loadSeconds,
   modeOf,
   nextScreenPath,
 } from "@/lib/screenSettings";
@@ -64,7 +66,8 @@ export function useRotate(seconds: number, skip = false) {
 
   useEffect(() => {
     if (new URLSearchParams(location.search).get("rotate") === "0") return;
-    const periodMs = seconds * 1000;
+    // The menu's "Seconds per screen" overrides this screen's default.
+    const period = () => (loadSeconds() ?? seconds) * 1000;
     let timer: ReturnType<typeof setTimeout>;
     let retryTimer: ReturnType<typeof setTimeout> | undefined;
     let done = false;
@@ -79,6 +82,7 @@ export function useRotate(seconds: number, skip = false) {
 
     const next = async (retry = false): Promise<void> => {
       if (done) return;
+      const periodMs = period();
       if (isLocked() || isMenuOpen()) return arm(periodMs);
       const since = Date.now() - lastAdvance();
       if (!retry && since >= 0 && since < periodMs * 0.9)
@@ -113,17 +117,23 @@ export function useRotate(seconds: number, skip = false) {
     const onLock = (e: Event) => {
       if (!(e as CustomEvent<boolean>).detail) {
         done = false;
-        arm(periodMs);
+        arm(period());
       }
     };
-    arm(periodMs);
+    // A new time from the menu applies right away.
+    const onSettings = () => {
+      if (!done) arm(period());
+    };
+    arm(period());
     window.addEventListener("keydown", onKey);
     window.addEventListener(LOCK_EVENT, onLock);
+    window.addEventListener(SETTINGS_EVENT, onSettings);
     return () => {
       clearTimeout(timer);
       clearTimeout(retryTimer);
       window.removeEventListener("keydown", onKey);
       window.removeEventListener(LOCK_EVENT, onLock);
+      window.removeEventListener(SETTINGS_EVENT, onSettings);
     };
   }, [seconds, router]);
 }
