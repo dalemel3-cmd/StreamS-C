@@ -11,7 +11,7 @@ import styles from "./clock.module.css";
 
 const TZ = "America/Chicago";
 const REFRESH_MS = 10 * 60 * 1000; // matches screens.json refreshSec
-const CAL_REFRESH_MS = 2 * 60 * 1000;
+const CAL_REFRESH_MS = 45 * 1000; // with the 60 s server cache, sportsYou changes show within ~2 min
 const WEATHER_KEY = "clock.weather";
 const CAL_KEY = "clock.calendar";
 
