@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { isLocked } from "@/lib/rotateLock";
 
 const PAUSE_AFTER_KEY_MS = 2 * 60 * 1000;
 const LAST_KEY = "rotate.last";
@@ -15,10 +16,11 @@ const LAST_KEY = "rotate.last";
  * than `seconds` ago (a stray timer from a page that was still loading), we wait instead.
  *
  * `skip` (e.g. the chosen sport has no marks here) moves on right away.
+ * While locked (Up on the remote), neither happens.
  */
 export function useRotate(seconds: number, skip = false) {
   useEffect(() => {
-    if (!skip) return;
+    if (!skip || isLocked()) return;
     try {
       sessionStorage.setItem(LAST_KEY, String(Date.now()));
     } catch {}
@@ -41,6 +43,7 @@ export function useRotate(seconds: number, skip = false) {
 
     const next = async () => {
       if (done) return;
+      if (isLocked()) return arm(periodMs);
       const since = Date.now() - lastAdvance();
       if (since < periodMs * 0.9) return arm(periodMs - since);
       done = true;
