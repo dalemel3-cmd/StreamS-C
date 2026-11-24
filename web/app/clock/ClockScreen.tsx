@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Stage from "@/components/Stage";
 import { store } from "@/lib/tv";
+import { useRotate } from "@/components/board/useRotate";
 import type { Weather } from "@/lib/weather";
 import styles from "./clock.module.css";
 
@@ -26,6 +27,7 @@ export default function ClockScreen() {
   const [now, setNow] = useState<ReturnType<typeof readNow> | null>(null);
   const [weather, setWeather] = useState<Weather | null>(null);
   const [offline, setOffline] = useState(false);
+  useRotate(20);
 
   // Clock: tick every second, but React only re-renders when the strings change.
   useEffect(() => {
