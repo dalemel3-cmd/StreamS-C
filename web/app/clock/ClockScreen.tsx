@@ -11,6 +11,7 @@ import styles from "./clock.module.css";
 
 const TZ = "America/Chicago";
 const REFRESH_MS = 10 * 60 * 1000; // matches screens.json refreshSec
+const CAL_REFRESH_MS = 2 * 60 * 1000;
 const WEATHER_KEY = "clock.weather";
 const CAL_KEY = "clock.calendar";
 
@@ -99,7 +100,7 @@ export default function ClockScreen() {
       }
     };
     load();
-    const id = setInterval(load, REFRESH_MS);
+    const id = setInterval(load, CAL_REFRESH_MS);
     return () => clearInterval(id);
   }, []);
 

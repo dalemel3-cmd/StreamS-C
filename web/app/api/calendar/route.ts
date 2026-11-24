@@ -15,13 +15,13 @@ export async function GET() {
   try {
     const res = await fetch(url, {
       headers: { Accept: "text/calendar, */*" },
-      next: { revalidate: 600 },
+      next: { revalidate: 120 },
       signal: AbortSignal.timeout(10_000),
     });
     if (!res.ok) throw new Error(`calendar upstream ${res.status}`);
-    const data: Calendar = { events: upcomingEvents(await res.text(), Date.now(), 24, 8), updated: new Date().toISOString() };
+    const data: Calendar = { events: upcomingEvents(await res.text(), Date.now(), 40, 3), updated: new Date().toISOString() };
     lastGood = data;
-    return NextResponse.json(data, { headers: { "Cache-Control": "s-maxage=300, stale-while-revalidate=300" } });
+    return NextResponse.json(data, { headers: { "Cache-Control": "s-maxage=60, stale-while-revalidate=60" } });
   } catch (err) {
     // Log the reason only, never the URL.
     console.error("calendar fetch failed:", err instanceof Error ? err.message : err);
