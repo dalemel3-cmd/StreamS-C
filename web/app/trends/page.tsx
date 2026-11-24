@@ -71,7 +71,7 @@ export default function Trends() {
     <Frame
       eyebrow={`Shiloh HPD · ${sport ?? "All sports"} · Avg change per athlete`}
       title="Season trends"
-      note="First 2 weeks vs last 30 days"
+      note="Avg best now vs first 2 weeks"
       filter="OK: change sport"
       updated={board?.generated_at}
       offline={offline}
@@ -121,29 +121,37 @@ export default function Trends() {
                         —
                       </td>
                     );
-                  // Shown in the metric's own direction: +lb / +in, or −s when sprint times got faster.
-                  const change = g.higher ? g.improvement : -g.improvement;
+                  // Weights round to the nearest 5 lb; the change is the difference of the two shown numbers.
+                  const shown = (v: number) =>
+                    g.unit === "lb" ? Math.round(v / 5) * 5 : v;
+                  const now = shown(g.recent_avg);
+                  const start = shown(g.base_avg);
+                  const change =
+                    g.unit === "lb"
+                      ? now - start
+                      : g.higher
+                        ? g.improvement
+                        : -g.improvement;
                   const flat =
-                    Math.abs(change) < (g.unit === "lb" ? 0.5 : 0.005);
+                    Math.abs(change) < (g.unit === "lb" ? 0.5 : 0.05);
+                  const better = g.higher ? change > 0 : change < 0;
                   const cls = flat
                     ? styles.dim
-                    : g.improvement > 0
+                    : better
                       ? styles.upBig
                       : styles.downBig;
                   return (
                     <td key={i}>
-                      <span className={`${styles.big} ${cls}`}>
+                      <span className={styles.big}>
+                        {formatValue(now, g.unit)}
+                      </span>
+                      <span className={`${styles.delta} ${cls}`}>
                         {flat
-                          ? "0"
+                          ? "±0"
                           : `${change > 0 ? "+" : "−"}${formatValue(Math.abs(change), g.unit)}`}
                       </span>
-                      <span className={`${styles.delta} ${styles.dim}`}>
-                        {g.improvement_pct > 0
-                          ? "+"
-                          : g.improvement_pct < 0
-                            ? "−"
-                            : ""}
-                        {Math.abs(g.improvement_pct).toFixed(0)}%
+                      <span className={styles.from}>
+                        from {formatValue(start, g.unit)}
                       </span>
                     </td>
                   );
