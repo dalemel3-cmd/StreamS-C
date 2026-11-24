@@ -5,7 +5,13 @@ import styles from "@/components/board/board.module.css";
 import { useBoard } from "@/components/board/useBoard";
 import { useRotate } from "@/components/board/useRotate";
 import { useSportFilter } from "@/components/board/useSportFilter";
-import { METRICS, UNIT_LABEL, formatValue, sportsIn } from "@/lib/board";
+import {
+  METRICS,
+  UNIT_LABEL,
+  formatValue,
+  inSport,
+  sportsIn,
+} from "@/lib/board";
 
 const SHOW = [
   "bench",
@@ -30,10 +36,7 @@ export default function Records() {
     def: METRICS[slug],
     // This semester's best for the metric (falls back to all marks if the feed predates semester_bests).
     top: (board?.semester_bests ?? board?.bests ?? [])
-      .filter(
-        (b) =>
-          b.metric === METRICS[slug].metric && (!sport || b.sport === sport),
-      )
+      .filter((b) => b.metric === METRICS[slug].metric && inSport(b, sport))
       .sort((a, b) => (a.higher ? b.value - a.value : a.value - b.value))[0],
   })).filter((r) => r.top);
   useRotate(25, Boolean(board && sport && records.length === 0));
