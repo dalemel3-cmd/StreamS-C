@@ -136,11 +136,17 @@
   display: flex;
   flex-direction: column;
   min-height: 0;
-  padding: 40px 44px;
+  padding: 40px 44px 40px 56px;
   /* stop above the absolute "Updated" footer */
   margin-bottom: 64px;
-  background: var(--panel);
-  border-top: 6px solid var(--accent);
+  /* No hard box: the panel fades in from the left and leans back into the screen. */
+  background: linear-gradient(to right, rgba(10, 17, 32, 0) 0%, rgba(10, 17, 32, 0.75) 35%, rgba(14, 24, 44, 0.95) 100%);
+  border-right: 4px solid rgba(184, 156, 91, 0.7);
+  border-radius: 0 28px 28px 0;
+  transform: perspective(1600px) rotateY(-16deg);
+  transform-origin: right center;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 6%, #000 94%, transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0, #000 6%, #000 94%, transparent 100%);
 }
 
 .calTitle {
