@@ -5,7 +5,7 @@ import styles from "@/components/board/board.module.css";
 import { useBoard } from "@/components/board/useBoard";
 import { useRotate } from "@/components/board/useRotate";
 import { useSportFilter } from "@/components/board/useSportFilter";
-import { formatValue, sportsIn, type Trend } from "@/lib/board";
+import { formatValue, sportsIn } from "@/lib/board";
 
 // Paired columns under a group header: Bench | Squat (Back, Front) | Clean (Hang, Power) | Vertical (Arm swing, Hands on hips).
 const GROUPS = [
@@ -39,40 +39,23 @@ const GROUPS = [
     ],
   },
 ];
-const COLS = GROUPS.flatMap((g) => g.cols.map((c) => ({ ...c, higher: true })));
+const COLS: { metric: string; label: string }[] = GROUPS.flatMap((g) =>
+  g.cols.map((c) => ({ metric: c.metric, label: c.label })),
+);
 const MIN_ATHLETES = 3;
-
-/** First vs latest month team average for one sport + metric, when both months have enough athletes. */
-function change(trends: Trend[], sport: string, metric: string) {
-  const rows = trends
-    .filter(
-      (t) =>
-        t.sport === sport && t.metric === metric && t.athletes >= MIN_ATHLETES,
-    )
-    .sort((a, b) => a.month.localeCompare(b.month));
-  if (rows.length === 0) return null;
-  const first = rows[0];
-  const last = rows[rows.length - 1];
-  return {
-    latest: last.avg,
-    delta: rows.length > 1 ? last.avg - first.avg : null,
-  };
-}
 
 export default function Trends() {
   const { board, offline } = useBoard();
   const sport = useSportFilter(sportsIn(board));
-  const trends = board?.trends ?? [];
+  const gains = (board?.gains ?? []).filter((g) => g.athletes >= MIN_ATHLETES);
+  const cell = (team: string, metric: string) =>
+    gains.find((g) => g.sport === team && g.metric === metric) ?? null;
   const sports = [
-    ...new Set(
-      trends
-        .map((t) => t.sport)
-        .filter((s): s is string => Boolean(s) && (!sport || s === sport)),
-    ),
+    ...new Set(gains.map((g) => g.sport).filter((s) => !sport || s === sport)),
   ]
-    .map((sport) => ({
-      sport,
-      cells: COLS.map((c) => change(trends, sport, c.metric)),
+    .map((team) => ({
+      sport: team,
+      cells: COLS.map((c) => cell(team, c.metric)),
     }))
     .filter((r) => r.cells.some(Boolean))
     // Fullest rows first so teams with data in more columns make the cut.
@@ -86,9 +69,9 @@ export default function Trends() {
 
   return (
     <Frame
-      eyebrow={`Shiloh HPD · ${sport ?? "All sports"} · Team averages`}
+      eyebrow={`Shiloh HPD · ${sport ?? "All sports"} · Avg change per athlete`}
       title="Season trends"
-      note="Since first test month"
+      note="First 2 weeks vs last 30 days"
       filter="OK: change sport"
       updated={board?.generated_at}
       offline={offline}
@@ -131,30 +114,37 @@ export default function Trends() {
             {sports.map(({ sport, cells }) => (
               <tr key={sport}>
                 <td>{sport}</td>
-                {cells.map((cell, i) => {
-                  const col = COLS[i];
-                  if (!cell)
+                {cells.map((g, i) => {
+                  if (!g)
                     return (
                       <td key={i} className={styles.dim}>
                         —
                       </td>
                     );
-                  const better =
-                    cell.delta != null &&
-                    (col.higher ? cell.delta > 0 : cell.delta < 0);
+                  // Shown in the metric's own direction: +lb / +in, or −s when sprint times got faster.
+                  const change = g.higher ? g.improvement : -g.improvement;
+                  const flat =
+                    Math.abs(change) < (g.unit === "lb" ? 0.5 : 0.005);
+                  const cls = flat
+                    ? styles.dim
+                    : g.improvement > 0
+                      ? styles.upBig
+                      : styles.downBig;
                   return (
                     <td key={i}>
-                      <span className={styles.big}>
-                        {formatValue(cell.latest, col.unit)}
+                      <span className={`${styles.big} ${cls}`}>
+                        {flat
+                          ? "0"
+                          : `${change > 0 ? "+" : "−"}${formatValue(Math.abs(change), g.unit)}`}
                       </span>
-                      {cell.delta != null && Math.abs(cell.delta) >= 0.05 && (
-                        <span
-                          className={`${styles.delta} ${better ? styles.up : styles.down}`}
-                        >
-                          {cell.delta > 0 ? "▲" : "▼"}{" "}
-                          {formatValue(Math.abs(cell.delta), col.unit)}
-                        </span>
-                      )}
+                      <span className={`${styles.delta} ${styles.dim}`}>
+                        {g.improvement_pct > 0
+                          ? "+"
+                          : g.improvement_pct < 0
+                            ? "−"
+                            : ""}
+                        {Math.abs(g.improvement_pct).toFixed(0)}%
+                      </span>
                     </td>
                   );
                 })}

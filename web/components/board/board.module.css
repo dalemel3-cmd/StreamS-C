@@ -284,3 +284,15 @@
   vertical-align: bottom;
   padding-bottom: 6px;
 }
+
+.upBig {
+  color: #7fd08a;
+}
+
+.downBig {
+  color: #e57b6b;
+}
+
+.table .delta.dim {
+  font-size: 34px;
+}
