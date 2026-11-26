@@ -31,3 +31,9 @@ Vercel (Hobby): project imported from this repo with **Root Directory** `web`. P
 - Deep link: `adb shell am start -n com.mason.tv/.MainActivity --es screen clock`.
 - Offline: native "Reconnecting…" view, retries every 30 s; last screen list is cached.
 - Signing: repo secrets `MASON_TV_KEYSTORE_B64` and `MASON_TV_KEYSTORE_PASSWORD`. The keystore is never committed. Bump `versionCode` in `android/app/build.gradle.kts` for each release.
+
+## Web remote (`/remote`)
+Control the TV from any computer or phone: https://streams-c.vercel.app/remote (password = Vercel env `REMOTE_PASSWORD`).
+Change screen, prev/next, lock, OK, reload, sport filter, seconds per screen, and each screen's rotation mode. Shows what the TV is on and when it last checked in.
+- The TV app polls `/api/remote/poll` every 15 s, every 2 s while the remote page is open. Commands sit in `tv_private.remote_commands` in the HPD Supabase project (migration `db/migrations/2026-11-26_tv_remote.sql`) and expire after 2 minutes.
+- It only works while the stick is online. Offline recovery steps are on the page under "TV offline or no remote?".
