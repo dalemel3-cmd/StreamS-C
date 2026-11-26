@@ -4,6 +4,8 @@ import AutoReload from "@/components/AutoReload";
 import RotateLock from "@/components/RotateLock";
 import RotateProgress from "@/components/RotateProgress";
 import ScreenMenu from "@/components/ScreenMenu";
+import RemoteListener from "@/components/RemoteListener";
+import TvChrome from "@/components/TvChrome";
 
 export const metadata: Metadata = {
   title: "HPD TV",
@@ -41,10 +43,13 @@ export default function RootLayout({
       </head>
       <body>
         {children}
-        <AutoReload />
-        <RotateProgress />
-        <RotateLock />
-        <ScreenMenu />
+        <TvChrome>
+          <AutoReload />
+          <RotateProgress />
+          <RotateLock />
+          <ScreenMenu />
+          <RemoteListener />
+        </TvChrome>
       </body>
     </html>
   );

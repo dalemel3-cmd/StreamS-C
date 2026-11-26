@@ -1,0 +1,263 @@
+/* Web remote (/remote). A normal desktop/phone page: undo the TV's no-scroll, no-cursor body. */
+.root {
+  position: fixed;
+  inset: 0;
+  overflow-y: auto;
+  cursor: auto;
+  user-select: text;
+  background: var(--bg);
+  color: var(--fg);
+  font: 400 16px/1.5 var(--font);
+}
+.root button {
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+.wrap {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 24px 16px 64px;
+  display: grid;
+  gap: 16px;
+}
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+.brand {
+  font: 600 14px/1 var(--display);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.title {
+  font: 700 40px/1.1 var(--display);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid #1c2a40;
+  font-weight: 600;
+  font-size: 14px;
+}
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--muted);
+}
+.pillOn .dot {
+  background: var(--accent);
+}
+.pillOn {
+  border-color: var(--accent);
+}
+.pillOff {
+  color: var(--muted);
+}
+.card,
+.now {
+  background: var(--panel);
+  border: 1px solid #1c2a40;
+  border-radius: 12px;
+  padding: 20px;
+}
+.now {
+  border-color: var(--accent);
+}
+.label {
+  color: var(--muted);
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+.nowTitle {
+  font: 700 34px/1.15 var(--display);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-top: 4px;
+}
+.nowMeta {
+  color: var(--muted);
+  margin-bottom: 16px;
+}
+.pad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+}
+.btn,
+.big,
+.chip,
+.segBtn,
+.primary {
+  background: transparent;
+  border: 1px solid #2a3a55;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-weight: 600;
+  text-align: center;
+}
+.btn:hover,
+.big:hover,
+.chip:hover,
+.segBtn:hover {
+  border-color: var(--accent);
+}
+.root .big {
+  padding: 18px 10px;
+  font: 700 20px/1 var(--display);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--bg) !important;
+}
+.dim {
+  opacity: 0.55;
+}
+.hint {
+  margin-top: 12px;
+  color: var(--muted);
+  font-size: 13px;
+}
+.h2 {
+  font: 600 18px/1.2 var(--display);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 12px;
+  cursor: pointer;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 8px;
+}
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.chip {
+  border-radius: 999px;
+  padding: 8px 16px;
+}
+.list {
+  list-style: none;
+  display: grid;
+}
+.listRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 0;
+  border-top: 1px solid #16233a;
+}
+.listRow:first-child {
+  border-top: 0;
+}
+.listName {
+  font-weight: 600;
+}
+.seg {
+  display: inline-flex;
+  gap: 4px;
+}
+.segBtn {
+  padding: 6px 10px;
+  font-size: 13px;
+}
+.help {
+  color: var(--fg);
+}
+.help p {
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+.help ol {
+  padding-left: 20px;
+  display: grid;
+  gap: 8px;
+}
+.help code {
+  font-size: 13px;
+  background: #050d1a;
+  border: 1px solid #1c2a40;
+  border-radius: 4px;
+  padding: 1px 5px;
+  word-break: break-all;
+}
+.footer {
+  text-align: center;
+}
+.link {
+  background: none;
+  border: 0;
+  color: var(--muted);
+  text-decoration: underline;
+}
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  background: var(--accent);
+  color: var(--bg);
+  font-weight: 700;
+  padding: 10px 18px;
+  border-radius: 999px;
+  max-width: calc(100% - 32px);
+}
+.login {
+  max-width: 360px;
+  margin: 18vh auto 0;
+  padding: 0 16px;
+  display: grid;
+  gap: 12px;
+}
+.input {
+  font: inherit;
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1px solid #2a3a55;
+  background: var(--panel);
+  color: var(--fg);
+}
+.input:focus {
+  outline: 2px solid var(--accent);
+  border-color: var(--accent);
+}
+.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--bg) !important;
+  font-weight: 700;
+}
+.primary:disabled {
+  opacity: 0.6;
+}
+.error {
+  color: #ffffff;
+  border-left: 3px solid var(--accent);
+  padding-left: 10px;
+}
