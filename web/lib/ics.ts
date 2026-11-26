@@ -105,7 +105,9 @@ const DAY_MS = 86_400_000;
 function expand(startMs: number, rule: string, exdates: Set<number>, from: number, to: number, tz: string): number[] {
   const r = Object.fromEntries(rule.split(";").map((kv) => kv.split("=") as [string, string]));
   const freq = r.FREQ;
-  if (freq !== "DAILY" && freq !== "WEEKLY") return startMs >= from && startMs <= to ? [startMs] : [];
+  if (freq !== "DAILY" && freq !== "WEEKLY" && freq !== "MONTHLY") {
+    return startMs >= from && startMs <= to ? [startMs] : [];
+  }
   const interval = Math.max(1, Number(r.INTERVAL) || 1);
   const count = r.COUNT ? Number(r.COUNT) : Infinity;
   const until = r.UNTIL ? parseDate(r.UNTIL, {})?.ms ?? Infinity : Infinity;
@@ -118,10 +120,46 @@ function expand(startMs: number, rule: string, exdates: Set<number>, from: numbe
     local.getUTCFullYear(), local.getUTCMonth(), local.getUTCDate(),
     local.getUTCHours(), local.getUTCMinutes(), local.getUTCSeconds(),
   ];
+
+  if (freq === "MONTHLY") {
+    const out: number[] = [];
+    let seen = 0;
+    const monthsDiff =
+      count === Infinity && from > startMs
+        ? Math.max(0, Math.floor((from - startMs) / (31 * DAY_MS * interval)) * interval - interval)
+        : 0;
+    for (let m = monthsDiff; m < monthsDiff + 600 && seen < count; m += interval) {
+      const targetMonth = new Date(Date.UTC(Y, M + m, 1));
+      const daysInMonth = new Date(Date.UTC(targetMonth.getUTCFullYear(), targetMonth.getUTCMonth() + 1, 0)).getUTCDate();
+      if (D > daysInMonth) continue;
+      const t = zonedToUtc(targetMonth.getUTCFullYear(), targetMonth.getUTCMonth(), D, h, mi, s, tz);
+      if (t < startMs) continue;
+      if (t > until || t > to) break;
+      seen++;
+      if (t >= from && !exdates.has(t)) out.push(t);
+    }
+    return out;
+  }
+
   const startWeekday = local.getUTCDay();
   const out: number[] = [];
   let seen = 0;
-  for (let i = 0; i < 800 && seen < count; i++) {
+
+  // For unbounded rules created years ago, jump close to `from` instead of stopping at 800 days.
+  let startDay = 0;
+  if (count === Infinity && from > startMs + 14 * DAY_MS) {
+    const daysBehind = Math.floor((from - startMs) / DAY_MS) - 14;
+    if (freq === "DAILY") {
+      startDay = Math.max(0, Math.floor(daysBehind / interval) * interval);
+    } else {
+      const weekStep = interval * 7;
+      startDay = Math.max(0, Math.floor(daysBehind / weekStep) * weekStep);
+    }
+  }
+
+  const maxSteps = count === Infinity ? 400 : 5000;
+  for (let step = 0; step < maxSteps && seen < count; step++) {
+    const i = startDay + step;
     const dayDate = new Date(Date.UTC(Y, M, D + i));
     const weekday = dayDate.getUTCDay();
     let hit: boolean;

@@ -23,7 +23,10 @@ export async function GET() {
     `&timezone=${encodeURIComponent(TZ)}`;
 
   try {
-    const res = await fetch(url, { next: { revalidate } });
+    const res = await fetch(url, {
+      next: { revalidate },
+      signal: AbortSignal.timeout(10_000),
+    });
     if (!res.ok) throw new Error(`open-meteo ${res.status}`);
     const j = await res.json();
     const data: Weather = {
@@ -38,7 +41,9 @@ export async function GET() {
       updated: new Date().toISOString(),
     };
     lastGood = data;
-    return NextResponse.json(data);
+    return NextResponse.json(data, {
+      headers: { "Cache-Control": "s-maxage=300, stale-while-revalidate=3600" },
+    });
   } catch (err) {
     console.error("weather fetch failed:", err);
     if (lastGood) return NextResponse.json({ ...lastGood, stale: true });

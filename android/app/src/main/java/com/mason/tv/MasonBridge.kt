@@ -13,6 +13,9 @@ class MasonBridge(private val activity: MainActivity) {
     fun prevScreen() = activity.runOnUiThread { activity.step(-1) }
 
     @JavascriptInterface
+    fun syncPath(path: String) = activity.runOnUiThread { activity.syncPath(path) }
+
+    @JavascriptInterface
     fun getDeviceName(): String =
         Settings.Global.getString(activity.contentResolver, Settings.Global.DEVICE_NAME) ?: Build.MODEL
 }

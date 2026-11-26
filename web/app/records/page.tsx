@@ -57,7 +57,7 @@ export default function Records() {
       ) : (
         <div
           className={styles.cards}
-          style={{ gridTemplateColumns: "repeat(4, 1fr)" }}
+          style={{ gridTemplateColumns: "repeat(3, 1fr)" }}
         >
           {records.map(({ def, top }) => (
             <div key={def.metric} className={styles.card}>

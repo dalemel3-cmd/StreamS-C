@@ -1,8 +1,13 @@
 // Contract between screens and the HPD TV Android shell.
-// The shell calls window.masonTv.onOk() when the remote's center button is pressed.
-// Left/Right are handled by the shell itself; Up/Down and other keys reach the page.
+// The shell calls window.masonTv.onOk() when the remote's center button is pressed,
+// onBack() for Back, and onStep(delta) for Left/Right so manual browsing stays in sync
+// with in-app rotation and respects Off screens.
 
-type MasonTvHooks = { onOk?: () => void };
+type MasonTvHooks = {
+  onOk?: () => void;
+  onBack?: () => boolean;
+  onStep?: (delta: number) => boolean;
+};
 
 declare global {
   interface Window {
@@ -11,15 +16,18 @@ declare global {
     MasonTV?: {
       nextScreen(): void;
       prevScreen(): void;
+      syncPath?(path: string): void;
       getDeviceName(): string;
     };
   }
 }
 
-// One OK dispatcher for the whole app: the settings menu (when open) gets OK first,
-// otherwise the current screen's handler (sport filter) does.
+// One OK / Back / Step dispatcher for the whole app: the settings menu (when open)
+// gets OK and Back first, otherwise the active screen does.
 let pageOk: (() => void) | null = null;
 let menuOk: (() => void) | null = null;
+let menuBack: (() => void) | null = null;
+let stepHandler: ((delta: number) => boolean) | null = null;
 let installed = false;
 
 function dispatchOk() {
@@ -27,11 +35,28 @@ function dispatchOk() {
   else pageOk?.();
 }
 
+function dispatchBack(): boolean {
+  if (menuBack) {
+    menuBack();
+    return true;
+  }
+  return false;
+}
+
+function dispatchStep(delta: number): boolean {
+  return stepHandler ? stepHandler(delta) : false;
+}
+
 function install() {
   if (installed || typeof window === "undefined") return;
   installed = true;
-  window.masonTv = { ...(window.masonTv ?? {}), onOk: dispatchOk };
-  // In a desktop browser, Enter does the same thing.
+  window.masonTv = {
+    ...(window.masonTv ?? {}),
+    onOk: dispatchOk,
+    onBack: dispatchBack,
+    onStep: dispatchStep,
+  };
+  // In a desktop browser, Enter does the same thing as OK.
   window.addEventListener("keydown", (e) => {
     if (e.key === "Enter") dispatchOk();
   });
@@ -50,6 +75,18 @@ export function onOk(handler: () => void): () => void {
 export function setMenuOk(handler: (() => void) | null) {
   install();
   menuOk = handler;
+}
+
+/** While the settings menu is open, Back closes it instead of leaving the app. */
+export function setMenuBack(handler: (() => void) | null) {
+  install();
+  menuBack = handler;
+}
+
+/** Register the in-app Left/Right handler used by the APK shell. */
+export function setStepHandler(handler: ((delta: number) => boolean) | null) {
+  install();
+  stepHandler = handler;
 }
 
 /** Read/write localStorage without throwing (private mode, quota, etc.). */

@@ -1,6 +1,7 @@
 // Shared types and helpers for the HPD office board screens.
 
 export type Best = {
+  aid?: string; // opaque hashed athlete id (prevents same-initial teammates colliding)
   name: string; // first name + last initial only (minors, public office)
   sport: string | null; // display label; "A · B" when one athlete has profiles in two sports
   sports?: string[]; // every sport the athlete is on (filtering uses this)
@@ -39,7 +40,7 @@ export type Gain = {
 /** One athlete's change this semester on one metric (first 2 weeks vs last 30 days of logging). */
 export type Improver = Pick<
   Best,
-  "name" | "sport" | "sports" | "metric" | "unit" | "higher"
+  "aid" | "name" | "sport" | "sports" | "metric" | "unit" | "higher"
 > & {
   start: number;
   now: number;
@@ -55,6 +56,7 @@ export type Board = {
   semester?: string;
   semester_bests?: Pick<
     Best,
+    | "aid"
     | "name"
     | "sport"
     | "sports"
@@ -156,4 +158,11 @@ export function ranked(
 export function sportsIn(board: Board | null): string[] {
   if (!board) return [];
   return [...new Set(board.bests.flatMap(sportsOf))].sort();
+}
+
+/** Stable grouping key per athlete (uses opaque `aid` when present, falls back to name + sport). */
+export function athleteKey(
+  b: Pick<Best, "aid" | "name" | "sport">,
+): string {
+  return b.aid ?? `${b.name}|${b.sport}`;
 }

@@ -115,19 +115,46 @@ class MainActivity : Activity() {
             }
         }
         return when (event.keyCode) {
-            KeyEvent.KEYCODE_DPAD_RIGHT -> { step(1); true }
-            KeyEvent.KEYCODE_DPAD_LEFT -> { step(-1); true }
+            KeyEvent.KEYCODE_DPAD_RIGHT -> { requestStep(1); true }
+            KeyEvent.KEYCODE_DPAD_LEFT -> { requestStep(-1); true }
             KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER -> {
                 web.evaluateJavascript("window.masonTv && window.masonTv.onOk && window.masonTv.onOk()", null)
                 true
             }
             KeyEvent.KEYCODE_BACK -> {
-                if (web.canGoBack()) web.goBack() else finish()
+                if (failed || offline.visibility == View.VISIBLE) {
+                    finish()
+                } else {
+                    web.evaluateJavascript(
+                        "(function(){return !!(window.masonTv&&window.masonTv.onBack&&window.masonTv.onBack());})()"
+                    ) { res ->
+                        if (res != "true") {
+                            if (web.canGoBack()) web.goBack() else finish()
+                        }
+                    }
+                }
                 true
             }
             // Everything else (up/down, media keys) goes to the page.
             else -> super.dispatchKeyEvent(event)
         }
+    }
+
+    private fun requestStep(delta: Int) {
+        if (failed || offline.visibility == View.VISIBLE) {
+            step(delta)
+            return
+        }
+        web.evaluateJavascript(
+            "(function(){return !!(window.masonTv&&window.masonTv.onStep&&window.masonTv.onStep($delta));})()"
+        ) { res ->
+            if (res != "true") step(delta)
+        }
+    }
+
+    fun syncPath(path: String) {
+        val i = screens.indexOfFirst { it.path == path }
+        if (i >= 0) index = i
     }
 
     fun step(delta: Int) {

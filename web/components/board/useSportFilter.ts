@@ -2,35 +2,29 @@
 
 import { useEffect, useState } from "react";
 import { onOk } from "@/lib/tv";
+import {
+  SPORT_EVENT,
+  clearLegacySport,
+  readSport,
+  writeSport,
+} from "@/lib/sportFilter";
 
-const KEY = "board.sport";
-
-// Per app run only (sessionStorage), so every launch starts on All sports.
-const session = {
-  get(): string | null {
-    try {
-      return sessionStorage.getItem(KEY);
-    } catch {
-      return null;
-    }
-  },
-  set(v: string | null) {
-    try {
-      if (v) sessionStorage.setItem(KEY, v);
-      else sessionStorage.removeItem(KEY);
-    } catch {}
-  },
-};
-
-/** OK on the remote cycles All -> each sport -> All. `?sport=Football` pins it. Shared across screens until relaunch. */
+/** OK on the remote cycles All -> each sport -> All. `?sport=Football` pins it. Shared across screens and the Down menu until relaunch. */
 export function useSportFilter(sports: string[]) {
   const [sport, setSport] = useState<string | null>(null);
 
   useEffect(() => {
-    try {
-      localStorage.removeItem(KEY); // older builds saved it permanently
-    } catch {}
-    setSport(new URLSearchParams(location.search).get("sport") ?? session.get());
+    clearLegacySport();
+    const pinned = new URLSearchParams(location.search).get("sport");
+    setSport(pinned ?? readSport());
+
+    const onChange = (e: Event) => {
+      if (new URLSearchParams(location.search).get("sport")) return;
+      const next = (e as CustomEvent<string | null>).detail ?? readSport();
+      setSport(next);
+    };
+    window.addEventListener(SPORT_EVENT, onChange);
+    return () => window.removeEventListener(SPORT_EVENT, onChange);
   }, []);
 
   useEffect(
@@ -39,7 +33,7 @@ export function useSportFilter(sports: string[]) {
         setSport((cur) => {
           const order = [null, ...sports];
           const next = order[(order.indexOf(cur) + 1) % order.length] ?? null;
-          session.set(next);
+          writeSport(next);
           return next;
         }),
       ),
