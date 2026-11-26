@@ -1,14 +1,25 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Frame from "@/components/board/Frame";
 import styles from "@/components/board/board.module.css";
 import { useBoard } from "@/components/board/useBoard";
 import { useRotate } from "@/components/board/useRotate";
 import { useSportFilter } from "@/components/board/useSportFilter";
-import { type Best, inSport, round5, sportsIn } from "@/lib/board";
+import {
+  type Best,
+  athleteKey,
+  inSport,
+  round5,
+  sportsIn,
+} from "@/lib/board";
 import { CLUBS } from "./clubs";
 
+const PAGE_SIZE = 8;
+const PAGE_SEC = 10;
+
 type Row = {
+  key: string;
   name: string;
   sport: string | null;
   bench: number;
@@ -26,8 +37,9 @@ function totals(bests: Best[], sport: string | null): Row[] {
   for (const b of bests) {
     if (b.unit !== "lb" || !inSport(b, sport)) continue;
     const v = round5(b.value); // as shown on the leaderboards
-    const key = `${b.name}|${b.sport}`;
+    const key = athleteKey(b);
     const r = by.get(key) ?? {
+      key,
       name: b.name,
       sport: b.sport,
       bench: 0,
@@ -52,6 +64,7 @@ function totals(bests: Best[], sport: string | null): Row[] {
 export const flyMph = (seconds: number) => 20.45 / seconds;
 
 type SpeedRow = {
+  key: string;
   name: string;
   sport: string | null;
   sports?: string[];
@@ -73,8 +86,9 @@ function speeds(bests: Best[], sport: string | null): SpeedRow[] {
           ? b.value
           : null;
     if (mph == null) continue;
-    const key = `${b.name}|${b.sport}`;
+    const key = athleteKey(b);
     const r = rows.get(key) ?? {
+      key,
       name: b.name,
       sport: b.sport,
       sports: b.sports,
@@ -110,48 +124,23 @@ export default function ClubBoard({ slug }: { slug: string }) {
   const { board, offline } = useBoard();
   const sport = useSportFilter(sportsIn(board));
   const bests = board?.bests ?? [];
+  const [page, setPage] = useState(0);
 
-  // No members yet: each board shows who's closest so it still motivates.
   let count = 0;
-  let body: React.ReactNode;
+  let totalPages = 1;
+  let hasMembers = false;
+  let totalRows: Row[] = [];
+  let speedRows: SpeedRow[] = [];
+
   if (club.kind === "total") {
     const all = totals(bests, sport);
     const members = all.filter((r) => r.total >= club.target);
     count = members.length;
-    const rows = (members.length ? members : all).slice(0, 8);
-    body =
-      rows.length === 0 ? null : (
-        <table className={`${styles.table} ${styles.tight}`}>
-          <thead>
-            <tr>
-              <th>{members.length ? "Athlete" : "Closest to 1,000"}</th>
-              <th>Bench</th>
-              <th>Squat</th>
-              <th>Clean</th>
-              <th>Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((r) => (
-              <tr key={`${r.name}|${r.sport}`}>
-                <Name r={r} sport={sport} />
-                <td>{r.bench}</td>
-                <td>{r.squat}</td>
-                <td>{r.clean}</td>
-                <td>
-                  <span className={styles.big}>{r.total}</span>
-                  {!members.length && (
-                    <span className={styles.meta}>
-                      {" "}
-                      &nbsp;−{club.target - r.total}
-                    </span>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      );
+    hasMembers = members.length > 0;
+    const pool = hasMembers ? members : all.slice(0, PAGE_SIZE);
+    totalPages = Math.max(1, Math.ceil(pool.length / PAGE_SIZE));
+    const safePage = page % totalPages;
+    totalRows = pool.slice(safePage * PAGE_SIZE, (safePage + 1) * PAGE_SIZE);
   } else {
     const all = speeds(bests, sport);
     // Tiers: each athlete only in their highest club (16 mph = 16.0 to 16.9). The top club has no ceiling.
@@ -165,15 +154,71 @@ export default function ClubBoard({ slug }: { slug: string }) {
         shown(r) >= club.mph && (club.mph === top || shown(r) < club.mph + 1),
     );
     count = members.length;
+    hasMembers = members.length > 0;
     const below = all.filter((r) => shown(r) < club.mph);
-    const rows = (members.length ? members : below).slice(0, 8);
+    const pool = hasMembers ? members : below.slice(0, PAGE_SIZE);
+    totalPages = Math.max(1, Math.ceil(pool.length / PAGE_SIZE));
+    const safePage = page % totalPages;
+    speedRows = pool.slice(safePage * PAGE_SIZE, (safePage + 1) * PAGE_SIZE);
+  }
+
+  // Reset to page 1 when switching sport or club, and auto-page large clubs during dwell time.
+  useEffect(() => {
+    setPage(0);
+  }, [slug, sport, totalPages]);
+
+  useEffect(() => {
+    if (totalPages <= 1) return;
+    const id = setInterval(() => {
+      setPage((p) => (p + 1) % totalPages);
+    }, PAGE_SEC * 1000);
+    return () => clearInterval(id);
+  }, [totalPages]);
+
+  const currentPage = page % totalPages;
+  let body: React.ReactNode;
+  if (club.kind === "total") {
     body =
-      rows.length === 0 ? null : (
+      totalRows.length === 0 ? null : (
+        <table className={`${styles.table} ${styles.tight}`}>
+          <thead>
+            <tr>
+              <th>{hasMembers ? "Athlete" : "Closest to 1,000"}</th>
+              <th>Bench</th>
+              <th>Squat</th>
+              <th>Clean</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {totalRows.map((r) => (
+              <tr key={r.key}>
+                <Name r={r} sport={sport} />
+                <td>{r.bench}</td>
+                <td>{r.squat}</td>
+                <td>{r.clean}</td>
+                <td>
+                  <span className={styles.big}>{r.total}</span>
+                  {!hasMembers && (
+                    <span className={styles.meta}>
+                      {" "}
+                      &nbsp;−{club.target - r.total}
+                    </span>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      );
+  } else {
+    body =
+      speedRows.length === 0 ? null : (
         <table className={`${styles.table} ${styles.tight}`}>
           <thead>
             <tr>
               <th>
-                {members.length ? "Athlete" : `Closest to ${club.mph} mph`}
+                {hasMembers ? "Athlete" : `Closest to ${club.mph} mph`}
               </th>
               <th>GPS</th>
               <th>Fly 10</th>
@@ -181,8 +226,8 @@ export default function ClubBoard({ slug }: { slug: string }) {
             </tr>
           </thead>
           <tbody>
-            {rows.map((r) => (
-              <tr key={`${r.name}|${r.sport}`}>
+            {speedRows.map((r) => (
+              <tr key={r.key}>
                 <Name r={r} sport={sport} />
                 <td>{r.gps == null ? "–" : r.gps.toFixed(1)}</td>
                 <td>{r.fly == null ? "–" : r.fly.toFixed(1)}</td>
@@ -191,7 +236,7 @@ export default function ClubBoard({ slug }: { slug: string }) {
                   <span className={styles.meta}>
                     {" "}
                     &nbsp;
-                    {members.length
+                    {hasMembers
                       ? r.source
                       : `−${(club.mph - r.mph).toFixed(1)}`}
                   </span>
@@ -202,7 +247,14 @@ export default function ClubBoard({ slug }: { slug: string }) {
         </table>
       );
   }
-  useRotate(20, Boolean(board && sport && !body));
+
+  useRotate(Math.max(20, totalPages * PAGE_SEC), Boolean(board && sport && !body));
+
+  const note = count
+    ? `${count} member${count === 1 ? "" : "s"}${
+        totalPages > 1 ? ` · Page ${currentPage + 1}/${totalPages}` : ""
+      }`
+    : undefined;
 
   return (
     <Frame
@@ -212,7 +264,7 @@ export default function ClubBoard({ slug }: { slug: string }) {
           : "Best of GPS or Fly 10 (20.45 ÷ time)"
       }`}
       title={club.title}
-      note={count ? `${count} member${count === 1 ? "" : "s"}` : undefined}
+      note={note}
       filter="OK: change sport"
       updated={board?.generated_at}
       offline={offline}

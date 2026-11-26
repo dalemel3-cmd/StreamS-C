@@ -8,6 +8,7 @@ import { useSportFilter } from "@/components/board/useSportFilter";
 import {
   METRICS,
   UNIT_LABEL,
+  athleteKey,
   formatValue,
   ranked,
   sportsIn,
@@ -43,12 +44,15 @@ export default function Leaderboard({ slug }: { slug: string }) {
         <div className={styles.leaders}>
           {top.map((b, i) => (
             <div
-              key={`${b.name}-${i}`}
+              key={`${athleteKey(b)}-${i}`}
               className={`${styles.row} ${i < 3 ? styles.top : ""}`}
             >
               <span className={styles.rank}>{i + 1}</span>
               <span className={styles.who}>
-                <span className={styles.name}>{b.name}</span>
+                <span className={styles.nameRow}>
+                  <span className={styles.name}>{b.name}</span>
+                  {b.pr_this_week && <span className={styles.prBadge}>PR</span>}
+                </span>
                 <span className={styles.meta}>
                   {[b.sport, b.position, b.grade].filter(Boolean).join(" · ")}
                 </span>

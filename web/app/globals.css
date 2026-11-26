@@ -104,3 +104,31 @@ html.leaving body {
 .menuDone {
   color: var(--accent);
 }
+
+/* Subtle bottom-edge rotation countdown (components/RotateProgress.tsx). GPU transform only. */
+.rotateBar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 4px;
+  z-index: 9;
+  pointer-events: none;
+  background: rgba(184, 156, 91, 0.16);
+}
+.rotateFill {
+  width: 100%;
+  height: 100%;
+  background: var(--accent);
+  transform-origin: left center;
+  animation: rotateCountdown linear forwards;
+  will-change: transform;
+}
+@keyframes rotateCountdown {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}

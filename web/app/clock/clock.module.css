@@ -90,7 +90,7 @@
 }
 
 .offline {
-  color: #ffb020;
+  color: var(--accent);
 }
 
 /* Clock + "Coming up" calendar side by side (only when a calendar is set up). */

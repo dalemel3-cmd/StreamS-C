@@ -58,7 +58,20 @@ export function withMode(
   return next;
 }
 
-/** Fetch screens.json (8 s timeout). */
+const SCREENS_CACHE_KEY = "screens.list";
+
+function readCachedScreens(): ScreenEntry[] | null {
+  try {
+    const raw = localStorage.getItem(SCREENS_CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as ScreenEntry[];
+    return Array.isArray(parsed) && parsed.length ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Fetch screens.json (8 s timeout), caching the last good list for offline menu/rotation. */
 export async function loadScreens(): Promise<ScreenEntry[]> {
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), 8000);
@@ -67,7 +80,19 @@ export async function loadScreens(): Promise<ScreenEntry[]> {
       cache: "no-store",
       signal: ctrl.signal,
     });
-    return ((await res.json()) as { screens: ScreenEntry[] }).screens;
+    if (!res.ok) throw new Error(`screens.json ${res.status}`);
+    const list = ((await res.json()) as { screens: ScreenEntry[] }).screens;
+    if (Array.isArray(list) && list.length) {
+      try {
+        localStorage.setItem(SCREENS_CACHE_KEY, JSON.stringify(list));
+      } catch {}
+      return list;
+    }
+    throw new Error("empty screens.json");
+  } catch (err) {
+    const cached = readCachedScreens();
+    if (cached) return cached;
+    throw err;
   } finally {
     clearTimeout(t);
   }
@@ -87,6 +112,28 @@ export function nextScreenPath(
     if (modeOf(s, settings) === "on") return s.path === current ? null : s.path;
   }
   return null;
+}
+
+/** Manual Left/Right step: skips Off screens and stays aligned with the current route. */
+export function stepScreenPath(
+  screens: ScreenEntry[],
+  current: string,
+  delta: number,
+): string | null {
+  if (!screens.length) return null;
+  const settings = loadSettings();
+  const dir = delta >= 0 ? 1 : -1;
+  const i = screens.findIndex((s) => s.path === current);
+  const start = i >= 0 ? i : dir > 0 ? -1 : 0;
+  for (let k = 1; k <= screens.length; k++) {
+    const idx = (((start + dir * k) % screens.length) + screens.length) % screens.length;
+    const s = screens[idx];
+    if (modeOf(s, settings) !== "off") return s.path === current ? null : s.path;
+  }
+  // If every screen is set to Off, still allow manual Left/Right browsing.
+  const fallback =
+    screens[(((start + dir) % screens.length) + screens.length) % screens.length];
+  return fallback && fallback.path !== current ? fallback.path : null;
 }
 
 // Seconds each screen stays up. null = each screen's own default (20-25 s).
@@ -125,5 +172,9 @@ export const secondsLabel = (v: number | null) =>
 let menuOpen = false;
 export const isMenuOpen = () => menuOpen;
 export const setMenuOpen = (v: boolean) => {
+  if (menuOpen === v) return;
   menuOpen = v;
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new CustomEvent(SETTINGS_EVENT));
+  }
 };

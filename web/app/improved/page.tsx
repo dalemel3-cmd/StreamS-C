@@ -9,6 +9,7 @@ import {
   type Improver,
   METRICS,
   UNIT_LABEL,
+  athleteKey,
   formatValue,
   inSport,
   round5,
@@ -31,7 +32,7 @@ export default function MostImproved() {
     // Change between the numbers as shown (nearest 5 lb), like the app.
     const gain = round5(r.now) - round5(r.start);
     if (gain <= 0) continue;
-    const key = `${r.name}|${r.sport}`;
+    const key = athleteKey(r);
     const cur = best.get(key);
     if (!cur || gain > cur.gain) best.set(key, { ...r, gain });
   }
@@ -61,8 +62,8 @@ export default function MostImproved() {
             </tr>
           </thead>
           <tbody>
-            {rows.map((r, i) => (
-              <tr key={i}>
+            {rows.map((r) => (
+              <tr key={athleteKey(r)}>
                 <td>
                   {r.name}
                   {!sport && r.sport && (

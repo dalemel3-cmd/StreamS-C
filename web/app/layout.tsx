@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import AutoReload from "@/components/AutoReload";
 import RotateLock from "@/components/RotateLock";
+import RotateProgress from "@/components/RotateProgress";
 import ScreenMenu from "@/components/ScreenMenu";
 
 export const metadata: Metadata = {
@@ -41,6 +42,7 @@ export default function RootLayout({
       <body>
         {children}
         <AutoReload />
+        <RotateProgress />
         <RotateLock />
         <ScreenMenu />
       </body>

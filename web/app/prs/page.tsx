@@ -8,6 +8,7 @@ import { useSportFilter } from "@/components/board/useSportFilter";
 import {
   METRICS,
   UNIT_LABEL,
+  athleteKey,
   formatValue,
   inSport,
   round5,
@@ -43,6 +44,8 @@ export default function PRs() {
           : Math.abs(b.value - (b.previous as number)),
       pct: Math.abs(b.value / (b.previous as number) - 1),
     }))
+    // Hide lifts whose rounded 5 lb display didn't change (e.g. 223 -> 224, both 225 lb).
+    .filter((b) => (b.unit === "lb" ? b.gain > 0 : b.gain >= 0.005))
     .sort((a, b) => b.pct - a.pct)
     .slice(0, 6);
   useRotate(25, Boolean(board && sport && prs.length === 0));
@@ -63,8 +66,8 @@ export default function PRs() {
         </div>
       ) : (
         <div className={styles.cards}>
-          {prs.map((b, i) => (
-            <div key={i} className={styles.card}>
+          {prs.map((b) => (
+            <div key={`${athleteKey(b)}-${b.metric}`} className={styles.card}>
               <span className={styles.cardLabel}>
                 {TITLE[b.metric] ?? b.metric}
               </span>
